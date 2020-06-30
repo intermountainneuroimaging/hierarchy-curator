@@ -1,5 +1,5 @@
 import logging
-import flywheel
+from flywheel_gear_toolkit import GearToolkitContext
 from custom_curator import curate
 
 log = logging.getLogger(__name__)
@@ -22,7 +22,7 @@ def parse_config(gear_context):
 
 
 if __name__ == "__main__":
-    with flywheel.GearContext() as gear_context:
+    with GearToolkitContext() as gear_context:
         gear_context.init_logging()
         project, curator_path, input_files = parse_config(gear_context)
         log.info("Curating project %s", project.label)
