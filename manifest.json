@@ -1,0 +1,54 @@
+{
+  "name": "custom-curator",
+  "label": "Custom Curator",
+  "description": "Curates a project given a python Curator class. Using an implementation of the Curator Class (provided as an input file (e.g., curator.py)) this gear is able to curate an entire project, walking down the hierarchy through project, subject, session, acquisition, analysis, and file containers.",
+  "version": "0.1.0",
+  "custom": {
+    "gear-builder": {
+      "category": "analysis",
+      "image": "flywheel/custom-curation:0.1.0"
+    },
+    "flywheel": {
+      "suite": "Curation"
+    }
+  },
+  "inputs": {
+    "api-key": {
+      "base": "api-key"
+    },
+    "curator": {
+      "base": "file",
+      "description": "A python implementation of the Curator class (see https://github.com/flywheel-apps/custom-curator for more details).",
+      "type": {
+        "enum": [
+          "source data"
+        ]
+      }
+    },
+    "additional-input-one": {
+      "base": "file",
+      "description": "An optional input for curation.",
+      "optional": true
+    },
+    "additional-input-two": {
+      "base": "file",
+      "description": "An optional input for curation.",
+      "optional": true
+    },
+    "additional-input-three": {
+      "base": "file",
+      "description": "An optional input for curation.",
+      "optional": true
+    }
+  },
+  "config": {},
+  "environment": {
+  },
+  "command": "run.py",
+  "author": "Flywheel",
+  "maintainer": "Flywheel <support@flywheel.io>",
+  "cite": "",
+  "license": "MIT",
+  "source": "https://github.com/flywheel-apps/custom-curator",
+  "url": "https://github.com/flywheel-apps/custom-curator"
+}
