@@ -29,7 +29,7 @@ class MyCurator(curator.Curator):
 Examples of such scripts can be found in the examples [folder](./examples)
 
 ### Curate Methods
-The Curator Class must defined curate methods for each container type 
+The Curator Class must define curate methods for each container type 
 (excluding groups and collections). For each container, the method is 
 called `curate_<container_type>`. The method takes the container as an input.
 
@@ -39,9 +39,8 @@ For example, for the project container the curation method is defined as:
         ...
 ```
 
-This pattern is consistent for all containers. For the files container there is a 
-`curate_file` method that must be defined as which takes `_file` as input (note the
-use the underscore).
+This pattern is consistent for all containers. For the files container the method is 
+named `curate_file` and takes `file_` as input (note the underscore).
 
 ### Validate Methods
 In addition to the curate methods, the implementation can inherit _validate_ methods 
