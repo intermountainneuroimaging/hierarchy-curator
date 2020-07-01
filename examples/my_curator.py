@@ -101,8 +101,7 @@ class Curator(curator.Curator):
                 **kwargs,
             )
 
-    @staticmethod
-    def classify_file(file_: flywheel.FileEntry):
+    def classify_file(self, file_: flywheel.FileEntry):
         series_description = file_.info.get("SeriesDescription")
         classification = file_.classification
         if "a_special_string" in series_description.lower():

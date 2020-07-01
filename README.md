@@ -44,7 +44,7 @@ named `curate_file` and takes `file_` as input (note the underscore).
 
 ### Validate Methods
 In addition to the curate methods, the implementation can inherit _validate_ methods 
-specific to each container. By default these methods will always return `True`. 
+specific to each container. By default these methods will always return `False`. 
 However, if, for example, curating a file is a time consuming process, it may be useful 
 to tag a file during the curation method and check for that tag elsewhere in the 
 validate method. Below is an example of how one might accomplish that:
