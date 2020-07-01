@@ -1,5 +1,6 @@
-import tempfile
 import csv
+import tempfile
+
 import pytest
 
 from custom_curator.reporters import CuratorErrorReporter, CuratorReporter

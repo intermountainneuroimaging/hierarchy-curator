@@ -1,5 +1,6 @@
-import sys
 from pathlib import Path
+import sys
+
 from custom_curator.utils import load_converter
 
 ROOT_DIR = Path(__file__).parents[1]

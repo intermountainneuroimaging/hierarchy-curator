@@ -6,10 +6,12 @@ mapping and the classification based on the Dicom SeriesDescription data element
 import json
 import logging
 
+import flywheel
 from flywheel_gear_toolkit import GearToolkitContext
+
 from custom_curator import curator
 from custom_curator.reporters import CuratorErrorReporter
-import flywheel
+
 
 log = logging.getLogger("my_curator")
 log.setLevel("DEBUG")

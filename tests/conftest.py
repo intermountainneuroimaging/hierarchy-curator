@@ -1,6 +1,7 @@
 from pathlib import Path
-import pytest
+
 import flywheel
+import pytest
 
 
 class MockFinder:

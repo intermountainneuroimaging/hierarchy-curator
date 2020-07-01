@@ -1,7 +1,8 @@
 import os
+from pathlib import Path
 import sys
 from typing import Union
-from pathlib import Path
+
 import flywheel
 
 # Typing shortcut

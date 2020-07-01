@@ -1,5 +1,7 @@
 import logging
+
 from flywheel_gear_toolkit import GearToolkitContext
+
 from custom_curator import curate
 
 log = logging.getLogger(__name__)
