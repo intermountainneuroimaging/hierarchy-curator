@@ -6,12 +6,13 @@ from custom_curator.utils import Container
 
 
 class Curator(abc.ABC):
-    """An abstract class that any user defined Curator class should inherited from.
+    """An abstract class that user-defined Curator class should inherited from.
 
-    This class defined abstract methods (i.e. methods that need to be implemented
-    in the child class) for each container type (e.g. `curate_project`) that must be
-    implemented in the custom curator class defined by the uer, as well
-    as validation methods for each container types. Validation methods becomes handy
+    This class defines abstract methods for each container type (e.g. `curate_project`)
+    (i.e. methods that need to be defined in the child curator Class implemented by the
+    user, see example scripts in the example folder). Such method is decorated with
+    the `abc.abstractmethod` decorator in this abstract class. Validation methods
+    are also defined for each container types. Validation methods become handy
     when, for example, curating a file is a time consuming process: it allows
     for marking a file during the curation method and check for that mark elsewhere in
     the validate method.
