@@ -7,33 +7,39 @@ log = logging.getLogger(__name__)
 log.setLevel("INFO")
 
 
-class Walker(abc.ABC):
+class Walker:
     """A class to walk the container hierarchically"""
 
-    def __init__(self, root: Container):
+    def __init__(self, root: Container, depth_first: bool = True):
         """
         Args:
             root (Container): The root container
         """
         self.list = [root]
+        self.depth_first = depth_first
 
-    @abc.abstractmethod
+    def next(self):
+        """Returns the next element from the walker and adds its children.
+
+        Returns:
+            Container|FileEntry
+        """
+        if self.depth_first:
+            next_element = self.list.pop()
+        else:
+            next_element = self.list.pop(0)
+        log.debug("Element returned is %s", type(next_element))
+        for child in self.get_children(next_element):
+            self.add(child)
+        return next_element
+
     def add(self, element: Container):
         """Adds an element to the data structure.
 
         Args:
             element (object): Element to add to the walker
         """
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def next(self):
-        """Returns the next element from the walker.
-
-        Returns:
-            Container|FileEntry
-        """
-        raise NotImplementedError
+        self.list.append(element)
 
     def get_children(self, element: Container):
         """Returns children of the element.
@@ -84,46 +90,3 @@ class Walker(abc.ABC):
 
         while not self.is_empty():
             yield self.next()
-
-
-class DepthFirstWalker(Walker):
-    def add(self, element: Container):
-        """Adds an element to the data structure.
-
-        Args:
-            element (object): Element to add to the walker
-        """
-        self.list.append(element)
-
-    def next(self):
-        """Returns the next element from the walker and adds its children.
-
-        Returns:
-            Container|FileEntry
-        """
-        next_element = self.list.pop()
-        log.debug("Element returned is %s", type(next_element))
-        for child in self.get_children(next_element):
-            self.add(child)
-        return next_element
-
-
-class BreadthFirstWalker(Walker):
-    def add(self, element: Container):
-        """Adds an element to the data structure.
-
-        Args:
-            element (object): Element to add to the walker
-        """
-        self.list.append(element)
-
-    def next(self):
-        """Returns the next element from the walker and adds its children.
-
-        Returns:
-            Container|FileEntry
-        """
-        next_element = self.list.pop(0)
-        for child in self.get_children(next_element):
-            self.add(child)
-        return next_element
