@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import logging
 
 from flywheel_gear_toolkit import GearToolkitContext
@@ -9,7 +10,7 @@ log = logging.getLogger(__name__)
 
 def parse_config(gear_context):
     analysis_id = gear_context.destination["id"]
-    analysis = gear_context.clien.get(analysis_id)
+    analysis = gear_context.client.get(analysis_id)
     project = gear_context.client.get(analysis.parent["id"])
     curator_path = gear_context.get_input_path("curator")
     input_file_one = gear_context.get_input_path("additional-input-one")

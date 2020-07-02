@@ -19,10 +19,10 @@ def test_curate_main_with_a_dummy_curator(fw_project):
     project = fw_project(n_subjects=1)
     curator_path = ASSETS_DIR / "dummy_curator.py"
     main(client, project, curator_path)
-    assert project.label == "Curated"
     subject = project.subjects()[0]
     session = subject.sessions()[0]
     acquisition = session.acquisitions()[0]
-    assert subject.label == "Curated"
-    assert session.label == "Curated"
-    assert acquisition.label == "Curated"
+    assert project.reload().label == "Curated"
+    assert subject.reload().label == "Curated"
+    assert session.reload().label == "Curated"
+    assert acquisition.reload().label == "Curated"

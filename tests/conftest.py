@@ -22,9 +22,18 @@ class MockFinder:
 class MockContainerMixin:
     analyses = []
     files = []
+    _update = None  # to store updates made to the container when calling `update`
 
     def reload(self):
+        if self._update:
+            for k, v in self._update.items():
+                setattr(self, k, v)
+            self._update = None
         return self
+
+    def update(self, *args, **kwargs):
+        self._update = flywheel.util.params_to_dict("update", args, kwargs)
+        return None
 
 
 class MockAcquisition(MockContainerMixin, flywheel.Acquisition):

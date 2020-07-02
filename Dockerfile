@@ -7,6 +7,7 @@ COPY ["requirements.txt", "/opt/requirements.txt"]
 RUN pip install -r /opt/requirements.txt \
     && mkdir -p $FLYWHEEL
 
-COPY run.py manifest.json custom_curator/ $FLYWHEEL/
+COPY run.py manifest.json $FLYWHEEL/
+COPY custom_curator $FLYWHEEL/custom_curator
 
 WORKDIR $FLYWHEEL

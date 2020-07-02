@@ -3,19 +3,19 @@ from custom_curator import curator
 
 class Curator(curator.Curator):
     def curate_project(self, project):
-        project.label = "Curated"
+        project.update(label="Curated")
 
     def curate_subject(self, subject):
-        subject.label = "Curated"
+        subject.update(label="Curated")
 
     def curate_session(self, session):
-        session.label = "Curated"
+        session.update(label="Curated")
 
     def curate_acquisition(self, acquisition):
-        acquisition.label = "Curated"
+        acquisition.update(label="Curated")
 
     def curate_file(self, file):
-        file.label = "Curated"
+        pass
 
     def curate_analysis(self, analysis):
-        analysis.label = "Curated"
+        pass
