@@ -1,7 +1,5 @@
 from pathlib import Path
 
-import flywheel
-
 from custom_curator.curate import main, get_curator
 
 ASSETS_DIR = Path(__file__).parent / "assets"

@@ -57,7 +57,7 @@ class Curator(curator.Curator):
                 subject_id=session.subject.id,
                 session_label=session.label,
                 session_id=session.id,
-                resolved="False"
+                resolved="False",
             )
 
     def curate_acquisition(self, acquisition: flywheel.Acquisition):

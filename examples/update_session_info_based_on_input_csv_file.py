@@ -54,10 +54,7 @@ class Curator(curator.Curator):
             ref = file_._parent.ref()
             kwargs = {f"{ref.type}_id": ref["id"]}
             self.error_reporter.write_file_error(
-                err_list=[],
-                err_str=str(exc),
-                file_name=file_.name,
-                **kwargs,
+                err_list=[], err_str=str(exc), file_name=file_.name, **kwargs,
             )
 
     def classify_file(self, file_: flywheel.FileEntry):

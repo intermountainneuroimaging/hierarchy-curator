@@ -18,7 +18,6 @@ log.setLevel("DEBUG")
 
 
 class Curator(curator.Curator):
-
     def __init__(self):
         super(Curator, self).__init__(depth_first=True)
         self.error_reporter = None
