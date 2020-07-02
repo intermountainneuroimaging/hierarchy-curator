@@ -36,10 +36,7 @@ def main(
     """
     curator = get_curator(client, curator_path, **kwargs)
 
-    if curator.depth_first:
-        project_walker = walker.DepthFirstWalker(project)
-    else:
-        project_walker = walker.BreadthFirstWalker(project)
+    project_walker = walker.Walker(project, depth_first=curator.depth_first)
 
     for container in project_walker.walk():
         curator.curate_container(container)

@@ -13,20 +13,21 @@ class Curator(abc.ABC):
     as validation methods for each container types. Validation methods becomes handy
     when, for example, curating a file is a time consuming process. It allows
     for tagging a file during the curation method and check for that tag elsewhere in
-    the validate method. Below is an example of how one might accomplish that:
+    the validate method.
 
-    >>> import curator
+    Example:
+    >>> from custom_curator import curator
     >>> class Curator(curator.Curator):
-	>>>     ...
-	>>>     def curate_file(self, file_):
-	>>>	       # Curates a file by setting the field 'file.info.curated' to True
-	>>>	       file_.update_info({'curated': True})
-	>>>     ...
-	>>>     def validate_file(self, file_):
-	>>>	        # Checks to see if a file has already been curated
-	>>>     	return file_.info.get('curated', False)
-
+    ...
+    ...     def curate_file(self, file_):
+    ...	       # Curates a file by setting the field 'file.info.curated' to True
+    ...	       file_.update_info({'curated': True})
+    ...
+    ...     def validate_file(self, file_):
+    ...	        # Checks to see if a file has already been curated
+    ...     	return file_.info.get('curated', False)
     """
+
     def __init__(self, depth_first=True):
         """An abstract class to be implemented in the input python file."""
         self.depth_first = depth_first
@@ -54,7 +55,7 @@ class Curator(abc.ABC):
                 if self.validate_session(container):
                     self.curate_session(container)
             elif container_type == "acquisition":
-                if self.validate_acquisition(container)
+                if self.validate_acquisition(container):
                     self.curate_acquisition(container)
             elif container_type == "file":
                 if self.validate_file(container):
@@ -123,7 +124,7 @@ class Curator(abc.ABC):
         raise NotImplementedError
 
     def validate_project(self, project: flywheel.Project):
-        """Returns True if a project has been previously curated, False otherwise.
+        """Returns True if a project needs curation, False otherwise.
 
         Args:
             project (flywheel.Project): The project object to validate
@@ -131,10 +132,10 @@ class Curator(abc.ABC):
         Returns:
             bool: Whether or not the project is curated correctly
         """
-        return False
+        return True
 
     def validate_subject(self, subject: flywheel.Subject):
-        """Returns True if a subject has been previously curated, False otherwise.
+        """Returns True if a subject needs curation, False otherwise.
 
         Args:
             subject (flywheel.Subject): The subject object to validate
@@ -142,10 +143,10 @@ class Curator(abc.ABC):
         Returns:
             bool: Whether or not the subject is curated correctly
         """
-        return False
+        return True
 
     def validate_session(self, session: flywheel.Session):
-        """Returns True if a session has been previously curated, False otherwise.
+        """Returns True if a session needs curation, False otherwise.
 
         Args:
             session (flywheel.Session): The session object to validate
@@ -153,10 +154,10 @@ class Curator(abc.ABC):
         Returns:
             bool: Whether or not the session is curated correctly
         """
-        return False
+        return True
 
     def validate_acquisition(self, acquisition: flywheel.Acquisition):
-        """Returns True if a acquisition has been previously curated, False otherwise.
+        """Returns True if a acquisition needs curation, False otherwise.
 
         Args:
             acquisition (flywheel.Acquisition): The acquisition object to
@@ -165,10 +166,10 @@ class Curator(abc.ABC):
         Returns:
             bool: Whether or not the acquisition is curated correctly
         """
-        return False
+        return True
 
     def validate_analysis(self, analysis: flywheel.AnalysisOutput):
-        """Returns True if a analysis has been previously curated, False otherwise.
+        """Returns True if a analysis needs curation, False otherwise.
 
         Args:
             analysis (flywheel.Analysis): The analysis object to validate
@@ -176,10 +177,10 @@ class Curator(abc.ABC):
         Returns:
             bool: Whether or not the analysis is curated correctly
         """
-        return False
+        return True
 
     def validate_file(self, file_: flywheel.FileEntry):
-        """Returns True if a file_ has been previously curated, False otherwise.
+        """Returns True if a file_ needs curation, False otherwise.
 
         Args:
             file_ (flywheel.FileEntry): The file entry object to validate
@@ -187,4 +188,4 @@ class Curator(abc.ABC):
         Returns:
             bool: Whether or not the file_ is curated correctly
         """
-        return False
+        return True

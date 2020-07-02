@@ -1,10 +1,10 @@
 """A module to store reporter classes"""
-import os
+from collections import namedtuple
 import csv
 import logging
+import os
 from pathlib import Path
 from typing import Union, List
-from collections import namedtuple
 
 from custom_curator import utils
 
@@ -12,10 +12,10 @@ log = logging.getLogger(__name__)
 
 
 class CuratorReporter:
-    """Logs and appends in an output csv.
+    """Class to logs and appends to an output csv.
 
     Example:
-    # Create a CuratorReporter object and assign it as an attribute of Curator
+    >>> # Create a CuratorReporter object and assign it as an attribute of Curator
     >>> from custom_curator import curator
     >>> from flywheel_gear_toolkit import GearToolkitContext
     >>> class Curator(curator.Curator):
@@ -103,7 +103,7 @@ class CuratorErrorReporter:
     curate_project() method and saved as one of Curator's attributes.
 
     Example:
-    # Create a CuratorErrorReporter object and assign it as an attribute of Curator
+    >>> # Create a CuratorErrorReporter object and assign it as an attribute of Curator
     >>> from custom_curator import curator
     >>> from flywheel_gear_toolkit import GearToolkitContext
     >>> class Curator(curator.Curator):
@@ -121,23 +121,18 @@ class CuratorErrorReporter:
     ...         try:
     ...             # something that may raise
     ...         except Exception as exc:
-    ...             self.error_reporter.write_project_error(
-    ...                 errors_list=[],
+    ...             self.error_reporter.write_session_error(
     ...                 err_str=str(exc),
-    ...                 subject_label=session.subject.id,
+    ...                 subject_label=session.subject.label,
     ...                 subject_id=session.subject.id,
     ...                 session_label=session.label,
     ...                 session_id=session.id,
-    ...                 acquisition_label="",
-    ...                 acquisition_id="",
-    ...                 file_name="",
-    ...                 resolved="False",
-    ...                 search_key="",
     ...            )
     """
 
-    ErrorLogger = namedtuple(
-        "ErrorLogger",
+    # namedtuple that defines the csv row
+    ErrorRecord = namedtuple(
+        "ErrorRecord",
         [
             "subject_label",
             "subject_id",
@@ -145,16 +140,14 @@ class CuratorErrorReporter:
             "session_id",
             "acquisition_label",
             "acquisition_id",
+            "analysis_label",
+            "analysis_id",
             "file_name",
             "error",
             "resolved",
-            "sear_key",
+            "search_key",
         ],
     )
-    """
-    ErrorLogger is a namedtuple used instead of an OrderedDict to easily
-    access values using dot notation.
-    """
 
     def __init__(self, output_dir: Union[str, os.PathLike, Path], project_label: str):
         """
@@ -174,29 +167,25 @@ class CuratorErrorReporter:
         )
         with open(self.output_path_full, "w") as output_file:
             csv_dict_writer = csv.DictWriter(
-                output_file, fieldnames=self.ErrorLogger._fields
+                output_file, fieldnames=self.ErrorRecord._fields
             )
             csv_dict_writer.writeheader()
 
     def write_subject_error(
         self,
-        errors_list: list,
-        err_str: str,
         subject_label: str,
         subject_id: str,
         resolved: str = "False",
         search_key="",
+        err_str: str = "",
+        err_list: list = None,
     ):
 
-        self.append_write_error(
-            errors_list=errors_list,
+        self.append_error(
             err_str=err_str,
+            err_list=err_list,
             subject_label=subject_label,
             subject_id=subject_id,
-            session_label="",
-            session_id="",
-            acquisition_label="",
-            acquisition_id="",
             file_name="",
             resolved=resolved,
             search_key=search_key,
@@ -204,19 +193,19 @@ class CuratorErrorReporter:
 
     def write_session_error(
         self,
-        errors_list: list,
-        err_str: str,
-        subject_label: str,
-        subject_id: str,
         session_label: str,
         session_id: str,
+        subject_label: str = "",
+        subject_id: str = "",
         resolved: str = "False",
         search_key="",
+        err_str: str = "",
+        err_list: list = None,
     ):
 
-        self.append_write_error(
-            errors_list=errors_list,
+        self.append_error(
             err_str=err_str,
+            err_list=err_list,
             subject_label=subject_label,
             subject_id=subject_id,
             session_label=session_label,
@@ -228,23 +217,23 @@ class CuratorErrorReporter:
             search_key=search_key,
         )
 
-    def write_acq_error(
+    def write_acquisition_error(
         self,
-        errors_list: list,
-        err_str: str,
-        subject_label: str,
-        subject_id: str,
-        session_label: str,
-        session_id: str,
         acquisition_label: str,
         acquisition_id: str,
+        subject_label: str = "",
+        subject_id: str = "",
+        session_label: str = "",
+        session_id: str = "",
         resolved: str = "False",
         search_key="",
+        err_str: str = "",
+        err_list: list = None,
     ):
 
-        self.append_write_error(
-            errors_list=errors_list,
+        self.append_error(
             err_str=err_str,
+            err_list=err_list,
             subject_label=subject_label,
             subject_id=subject_id,
             session_label=session_label,
@@ -256,71 +245,136 @@ class CuratorErrorReporter:
             search_key=search_key,
         )
 
-    def write_file_error(
+    def write_analysis_error(
         self,
-        errors_list: list,
-        err_str: str,
-        subject_label: str,
-        subject_id: str,
-        session_label: str,
-        session_id: str,
-        acquisition_label: str,
-        acquisition_id: str,
-        file_name: str,
+        analysis_label: str,
+        analysis_id: str,
+        subject_label: str = "",
+        subject_id: str = "",
+        session_label: str = "",
+        session_id: str = "",
+        acquisition_label: str = "",
+        acquisition_id: str = "",
         resolved: str = "False",
         search_key="",
+        err_str: str = "",
+        err_list: list = None,
     ):
 
-        self.append_write_error(
-            errors_list=errors_list,
+        self.append_error(
             err_str=err_str,
+            err_list=err_list,
             subject_label=subject_label,
             subject_id=subject_id,
             session_label=session_label,
             session_id=session_id,
             acquisition_label=acquisition_label,
             acquisition_id=acquisition_id,
-            file_name=file_name,
+            analysis_label=analysis_label,
+            analysis_id=analysis_id,
+            file_name="",
             resolved=resolved,
             search_key=search_key,
         )
 
-    def append_write_error(
+    def write_file_error(
         self,
-        errors_list: list,
-        err_str: str,
-        subject_label,
+        subject_label: str,
         subject_id: str,
         session_label: str,
         session_id: str,
         acquisition_label: str,
         acquisition_id: str,
+        analysis_label: str,
+        analysis_id: str,
         file_name: str,
-        resolved: str,
+        resolved: str = "False",
         search_key="",
+        err_str: str = "",
+        err_list: list = None,
     ):
-        """Append an error to the error list and write it out to the output csv."""
 
-        log.error(err_str)
-        errors_list.append(
-            self.ErrorLogger(
-                subject_label=subject_label,
-                subject_id=subject_id,
-                session_label=session_label,
-                session_id=session_id,
-                acquisition_label=acquisition_label,
-                acquisition_id=acquisition_id,
-                file_name=file_name,
-                error=err_str,
-                resolved=resolved,
-                sear_key=search_key,
-            )
+        self.append_error(
+            err_str=err_str,
+            err_list=err_list,
+            subject_label=subject_label,
+            subject_id=subject_id,
+            session_label=session_label,
+            session_id=session_id,
+            acquisition_label=acquisition_label,
+            acquisition_id=acquisition_id,
+            analysis_label=analysis_label,
+            analysis_id=analysis_id,
+            file_name=file_name,
+            resolved=resolved,
+            search_key=search_key,
         )
-        self.write_error_log(errors_list)
 
-    def write_error_log(self, errors_list: list):
-        # errors_list is a dictionary. Use its keys as the headers for the
-        # csv file
+    @staticmethod
+    def _validate_error(err_str: str, err_list: list):
+        """Returns a list of validation errors for `err_str` and `err_list`"""
+        validation_error = []
+        if not err_str and not err_list:
+            validation_error.append(
+                f"Either err_str or err_list must be defined."
+                f"Currently: \nerr_str: {err_str}\nerr_list: {err_list}"
+            )
+
+        if err_list and not isinstance(err_list, list):
+            validation_error.append(f"err_list must be a list. {err_list} found.")
+
+        if err_str and err_list:
+            validation_error.append(
+                f"err_str and err_list cannot be both defined. "
+                f"Currently: \nerr_str: {err_str}\nerr_list: {err_list}"
+            )
+
+        return validation_error
+
+    def append_error(
+        self,
+        subject_label: str = "",
+        subject_id: str = "",
+        session_label: str = "",
+        session_id: str = "",
+        acquisition_label: str = "",
+        acquisition_id: str = "",
+        analysis_label: str = "",
+        analysis_id: str = "",
+        file_name: str = "",
+        resolved: str = "False",
+        search_key="",
+        err_str: str = "",
+        err_list: list = None,
+    ):
+        """Append errors to the error output csv."""
+        validation_error = self._validate_error(err_str, err_list)
+        if validation_error:
+            val_err_str = "\n".join(validation_error)
+            raise ValueError(f"Validation error(s) found: {val_err_str}")
+
+        errors = [err_str] if err_str else err_list
+        error_record_list = []
+        for error in errors:
+            error_record_list.append(
+                self.ErrorRecord(
+                    subject_label=subject_label,
+                    subject_id=subject_id,
+                    session_label=session_label,
+                    session_id=session_id,
+                    acquisition_label=acquisition_label,
+                    acquisition_id=acquisition_id,
+                    analysis_label=analysis_label,
+                    analysis_id=analysis_id,
+                    file_name=file_name,
+                    error=error,
+                    resolved=resolved,
+                    search_key=search_key,
+                )
+            )
+        self.write_error(error_record_list)
+
+    def write_error(self, errors_list: list):
         if not errors_list:
             raise ValueError(
                 f"errors_list must contain a list of at least "
@@ -329,9 +383,6 @@ class CuratorErrorReporter:
 
         with open(self.output_path_full, "a") as output_file:
             csv_dict_writer = csv.DictWriter(
-                output_file, fieldnames=self.ErrorLogger._fields
+                output_file, fieldnames=self.ErrorRecord._fields
             )
-
-            # Convert named tuple object to an OrderedDict
-            errors_list = [tup._asdict() for tup in errors_list]
-            csv_dict_writer.writerows(errors_list)
+            csv_dict_writer.writerows(map(lambda x: x._asdict(), errors_list))

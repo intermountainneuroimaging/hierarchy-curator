@@ -59,12 +59,12 @@ class Curator(curator.Curator):
 		file_.update_info({'curated': True})
 	...
 	def validate_file(self, file_):
-		"""Checks to see if a file has already been curated"""
-		return file_.info.get('curated', False)
+		"""Returns True if file needs curation, False otherwise"""
+		return not file_.info.get('curated', False)
 ```
 
 As shown in the `validate_file` method, the method should return `True` if the 
-container does not need to be curated and `False` if it does.
+container does need to be curated and `False` if it does not.
 
 ### Input files
 There are many cases where custom curation may require the use of input files. 

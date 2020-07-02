@@ -48,7 +48,7 @@ def fw_project():
     """Mock a flywheel project"""
 
     def get_fw_project(n_subjects=5, n_sessions=1, n_acquisitions=1, n_files=1):
-        project = MockProject(label="test", info={"study_id": "test"})
+        project = MockProject(label="Mock", info={"study_id": "test"})
         subjects = []
         for i in range(n_subjects):
             subject = MockSubject(label=f"sub-{i}")
