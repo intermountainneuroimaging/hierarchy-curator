@@ -53,18 +53,13 @@ class Curator(curator.Curator):
             if new_label:
                 session.update({"label": new_label})
         except Exception as exc:
-            self.error_reporter.write_file_error(
-                errors_list=[],
+            self.error_reporter.write_session_error(
+                err_list=[],
                 err_str=str(exc),
                 subject_label=session.subject.id,
                 subject_id=session.subject.id,
                 session_label=session.label,
                 session_id=session.id,
-                acquisition_label="",
-                acquisition_id="",
-                file_name="",
-                resolved="False",
-                search_key="",
             )
 
     def curate_acquisition(self, acquisition: flywheel.Acquisition):

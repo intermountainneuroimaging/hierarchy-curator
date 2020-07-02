@@ -4,10 +4,11 @@ mapping and the classification based on the Dicom SeriesDescription data element
 """
 import logging
 
+import flywheel
 from flywheel_gear_toolkit import GearToolkitContext
+
 from custom_curator import curator
 from custom_curator.reporters import CuratorErrorReporter
-import flywheel
 
 log = logging.getLogger("my_curator")
 log.setLevel("DEBUG")
@@ -16,6 +17,7 @@ log.setLevel("DEBUG")
 class Curator(curator.Curator):
     def __init__(self):
         super(Curator, self).__init__(depth_first=True)
+        self.error_reporter = None
 
     def curate_project(self, project: flywheel.Project):
         gear_context = GearToolkitContext()
@@ -52,16 +54,13 @@ class Curator(curator.Curator):
             ref = file_._parent.ref()
             kwargs = {f"{ref.type}_id": ref["id"]}
             self.error_reporter.write_file_error(
-                errors_list=[],
+                err_list=[],
                 err_str=str(exc),
                 file_name=file_.name,
-                resolved="False",
-                search_key="",
                 **kwargs,
             )
 
-    @staticmethod
-    def classify_file(file_: flywheel.FileEntry):
+    def classify_file(self, file_: flywheel.FileEntry):
         series_description = file_.info.get("SeriesDescription")
         classification = file_.classification
         if "a_special_string" in series_description.lower():

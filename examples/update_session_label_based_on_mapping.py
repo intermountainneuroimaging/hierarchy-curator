@@ -6,10 +6,12 @@ mapping and the classification based on the Dicom SeriesDescription data element
 import json
 import logging
 
+import flywheel
 from flywheel_gear_toolkit import GearToolkitContext
+
 from custom_curator import curator
 from custom_curator.reporters import CuratorErrorReporter
-import flywheel
+
 
 log = logging.getLogger("my_curator")
 log.setLevel("DEBUG")
@@ -48,18 +50,13 @@ class Curator(curator.Curator):
             if new_label:
                 session.update({"label": new_label})
         except Exception as exc:
-            self.error_reporter.write_file_error(
-                errors_list=[],
+            self.error_reporter.write_session_error(
                 err_str=str(exc),
                 subject_label=session.subject.id,
                 subject_id=session.subject.id,
                 session_label=session.label,
                 session_id=session.id,
-                acquisition_label="",
-                acquisition_id="",
-                file_name="",
-                resolved="False",
-                search_key="",
+                resolved="False"
             )
 
     def curate_acquisition(self, acquisition: flywheel.Acquisition):
