@@ -9,10 +9,11 @@ class Curator(abc.ABC):
     """An abstract class that any user defined Curator class should inherited from.
 
     This class defined abstract methods (i.e. methods that need to be implemented
-    in the child class) for each container type (e.g. `curate_project`) as well
+    in the child class) for each container type (e.g. `curate_project`) that must be
+    implemented in the custom curator class defined by the uer, as well
     as validation methods for each container types. Validation methods becomes handy
-    when, for example, curating a file is a time consuming process. It allows
-    for tagging a file during the curation method and check for that tag elsewhere in
+    when, for example, curating a file is a time consuming process: it allows
+    for marking a file during the curation method and check for that mark elsewhere in
     the validate method.
 
     Example:
@@ -24,8 +25,8 @@ class Curator(abc.ABC):
     ...	       file_.update_info({'curated': True})
     ...
     ...     def validate_file(self, file_):
-    ...	        # Checks to see if a file has already been curated
-    ...     	return file_.info.get('curated', False)
+    ...	        # Returns True if file needs curation, False otherwise
+    ...     	return not file_.info.get('curated', False)
     """
 
     def __init__(self, depth_first=True):
