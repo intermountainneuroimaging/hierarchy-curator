@@ -31,6 +31,11 @@ SESSION_LABEL_CORRECTION = {
 
 
 class Curator(curator.Curator):
+
+    def __init__(self):
+        super(Curator, self).__init__(depth_first=True)
+        self.error_reporter = None
+
     def curate_project(self, project: flywheel.Project):
         gear_context = GearToolkitContext()
         self.error_reporter = CuratorErrorReporter(
