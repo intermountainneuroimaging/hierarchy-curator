@@ -2,8 +2,6 @@ from custom_curator import curator
 
 
 class Curator(curator.Curator):
-    def __init__(self):
-        super(Curator, self).__init__(depth_first=False)
 
     def curate_project(self, project):
         project.label = "Curated"
