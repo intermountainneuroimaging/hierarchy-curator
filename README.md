@@ -1,3 +1,5 @@
+[![CircleCI](https://circleci.com/gh/flywheel-apps/custom-curator.svg?style=shield)](https://app.circleci.com/pipelines/github/flywheel-apps/custom-curator)
+
 # Custom Curation Gear
 There are a lot of cases where specific logic must be used to curate a given project. 
 This custom curation gear is able to take an implementation of the Curator Class 
