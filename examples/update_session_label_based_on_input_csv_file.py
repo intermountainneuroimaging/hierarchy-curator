@@ -28,10 +28,10 @@ class Curator(curator.Curator):
         if self.input_file_one:
             df = pd.read_csv(self.input_file_one)
             for i, r in df.iterrows():
-                session = gear_context.client.get_session(r['session.id'])
-                session.update(label=r['label'])
+                session = gear_context.client.get_session(r["session.id"])
+                session.update(label=r["label"])
         else:
-            raise ValueError('no csv file found')
+            raise ValueError("no csv file found")
 
     def curate_subject(self, subject: flywheel.Subject):
         pass
