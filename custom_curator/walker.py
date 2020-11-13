@@ -1,5 +1,7 @@
 import abc
 import logging
+from collections import deque
+from typing import List
 
 from custom_curator.utils import Container
 
@@ -15,7 +17,7 @@ class Walker:
         Args:
             root (Container): The root container
         """
-        self.list = [root]
+        self.deque = deque([root])
         self.depth_first = depth_first
 
     def next(self):
@@ -25,12 +27,14 @@ class Walker:
             Container|FileEntry
         """
         if self.depth_first:
-            next_element = self.list.pop()
+            next_element = self.deque.pop()
         else:
-            next_element = self.list.pop(0)
-        log.debug("Element returned is %s", type(next_element))
-        for child in self.get_children(next_element):
-            self.add(child)
+            next_element = self.deque.popleft()
+
+        log.debug(f"Element returned is {next_element.container_type}")
+
+        self.queue_children(next_element)
+
         return next_element
 
     def add(self, element: Container):
@@ -39,9 +43,12 @@ class Walker:
         Args:
             element (object): Element to add to the walker
         """
-        self.list.append(element)
+        self.deque.append(element)
 
-    def get_children(self, element: Container):
+    def add_many(self, elements: List[Container]):
+        self.deque.extend(elements)
+
+    def queue_children(self, element: Container):
         """Returns children of the element.
 
         Args:
@@ -50,28 +57,26 @@ class Walker:
         Returns:
             list: the children of the element
         """
-        children = []
         container_type = element.container_type
 
+        # No children of files
         if container_type == "file":
-            return children
+            return
 
-        children += element.files or []
+        log.info(f"Queueing children for container {element.label or element.code}")
+
+        self.extend(element.files or [])
 
         # Make sure that the analyses attribute is a list before iterating
         if container_type != "analysis" and isinstance(element.analyses, list):
-            children += [analysis.reload() for analysis in element.analyses]
+            # TODO: Determine what containers have non-list element.analyses
+            self.deque.extend(element.analyses)
             if container_type == "project":
-                children += [subject.reload() for subject in element.subjects()]
+                self.deque.extend(element.subjects())
             elif container_type == "subject":
-                children += [session.reload() for session in element.sessions()]
+                self.deque.extend(element.sessions())
             elif container_type == "session":
-                children += [
-                    acquisition.reload() for acquisition in element.acquisitions()
-                ]
-
-        log.debug("Children of element %s are:\n%s", element.id, children)
-        return children
+                self.deque.extend(element.acquisitions())
 
     def is_empty(self):
         """Returns True if the walker is empty.
@@ -79,7 +84,7 @@ class Walker:
         Returns:
             bool
         """
-        return len(self.list) == 0
+        return len(self.deque) == 0
 
     def walk(self):
         """Walks the hierarchy from a root container.
