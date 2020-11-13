@@ -2,10 +2,23 @@
 
 
 def parse_config(gear_context):
-    """Return args"""
+    """Parse gear config
+
+    Args:
+        gear_context (flywheel_gear_toolkit.GearToolkitContext): context
+
+    Returns:
+        (tuple): tuple containing
+            - parent container
+            - curator path
+            - dictionary of input files
+    """
     analysis_id = gear_context.destination["id"]
-    analysis = gear_context.client.get(analysis_id)
-    project = gear_context.client.get(analysis.parent["id"])
+    analysis = gear_context.client.get_analysis(analysis_id)
+
+    get_parent_fn = getattr(gear_context.client, f"get_{analysis.parent.type}")
+    parent = get_parent_fn(analysis.parent.id)
+
     curator_path = gear_context.get_input_path("curator")
     input_file_one = gear_context.get_input_path("additional-input-one")
     input_file_two = gear_context.get_input_path("additional-input-two")
@@ -15,4 +28,4 @@ def parse_config(gear_context):
         "input_file_two": input_file_two,
         "input_file_three": input_file_three,
     }
-    return project, curator_path, input_files
+    return parent, curator_path, input_files
