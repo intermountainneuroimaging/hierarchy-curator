@@ -36,17 +36,17 @@ class CuratorReporter:
     """
 
     def __init__(
-        self, output_dir: utils.PathLike, project_label: str, fieldnames: list = None,
+        self, output_dir: utils.PathLike, container_label: str, fieldnames: list = None,
     ):
         """
         Args
             output_folder (PathLike): A output directory
-            project_name (str): A project label
+            container_label (str): A project label
         """
         self.output_dir = output_dir
-        self.project_name = project_label
+        self.container_label = container_label
         self._fieldnames = fieldnames
-        self.error_log_name = self.project_name + "_curation_report.csv"
+        self.error_log_name = self.container_label + "_curation_report.csv"
         self.output_path_full = Path(self.output_dir) / self.error_log_name
 
         # Create the output csv file
@@ -149,16 +149,16 @@ class CuratorErrorReporter:
         ],
     )
 
-    def __init__(self, output_dir: Union[str, os.PathLike, Path], project_label: str):
+    def __init__(self, output_dir: Union[str, os.PathLike, Path], container_label: str):
         """
         Args
             output_folder (str): Should be set using attribute
                 flywheel.GearContext.ouput_dir
-            project_name (str): Should be set using attribute flywheel.Project.label
+            container_label (str): Should be set using attribute flywheel.<container>.label
         """
         self.output_dir = output_dir
-        self.project_name = project_label
-        self.error_log_name = self.project_name + "_curation_error_log.csv"
+        self.container_label = container_label
+        self.error_log_name = self.container_label + "_curation_error_log.csv"
         self.output_path_full = os.path.join(self.output_dir, self.error_log_name)
 
         # Create the output csv file

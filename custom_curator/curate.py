@@ -5,7 +5,9 @@ import flywheel
 from custom_curator import walker, utils
 
 
-def get_curator(client, curator_path: utils.PathLike, **kwargs):
+def get_curator(
+    client, curator_path: utils.PathLike, write_report: bool = False ** kwargs
+):
     """Returns an instantiated curator
 
     Args:
@@ -15,6 +17,7 @@ def get_curator(client, curator_path: utils.PathLike, **kwargs):
     """
     curator = utils.load_converter(curator_path).Curator()
     curator.client = client
+    setattr(curator, "write_report", write_report)
     for k, v in kwargs.items():
         setattr(curator, k, v)
     return curator
@@ -22,7 +25,7 @@ def get_curator(client, curator_path: utils.PathLike, **kwargs):
 
 def main(
     client: flywheel.Client,
-    project: flywheel.Project,
+    parent: utils.Container,
     curator_path: utils.PathLike,
     **kwargs
 ):
@@ -36,7 +39,7 @@ def main(
     """
     curator = get_curator(client, curator_path, **kwargs)
 
-    project_walker = walker.Walker(project, depth_first=curator.depth_first)
+    project_walker = walker.Walker(parent, depth_first=curator.depth_first)
 
     for container in project_walker.walk():
         curator.curate_container(container)

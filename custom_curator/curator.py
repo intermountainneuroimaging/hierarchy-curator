@@ -38,6 +38,7 @@ class Curator(abc.ABC):
         self.input_file_three = None
         self.context = None
         self.client = None
+        self.write_report = False
 
     def curate_container(self, container: Container):
         """Curates a generic container.
