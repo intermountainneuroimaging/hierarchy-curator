@@ -29,8 +29,8 @@ class Curator(curator.Curator):
         pass
 
     def curate_acquisition(self, acquisition: flywheel.Acquisition):
+        self.context = GearToolkitContext()
         if self.write_report:
-            gear_context = GearToolkitContext()
             self.error_reporter = CuratorErrorReporter(
                 output_dir=gear_context.output_dir, container_label=acquisition.label
             )
