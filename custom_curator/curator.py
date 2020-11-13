@@ -192,3 +192,44 @@ class Curator(abc.ABC):
             bool: Whether or not the file_ is curated correctly
         """
         return True
+
+
+class FileCurator(abc.ABC):
+    def __init__(self, depth_first=True):
+        """An abstract class to be implemented in the input python file."""
+        self.input_file_one = None
+        self.input_file_two = None
+        self.input_file_three = None
+        self.context = None
+        self.client = None
+        self.write_report = False
+
+    def curate_container(self, container: Container):
+        """Curates a generic container.
+
+        Args:
+            container (Container): A Flywheel container.
+        """
+        # element is a file and has no children
+        if self.validate_file(container):
+            self.curate_file(container)
+
+    @abc.abstractmethod
+    def curate_file(self, file_: flywheel.FileEntry):
+        """Curates a file.
+
+        Args:
+            file_ (flywheel.FileEntry): The file entry object to curate
+        """
+        raise NotImplementedError
+
+    def validate_file(self, file_: flywheel.FileEntry):
+        """Returns True if a file_ needs curation, False otherwise.
+
+        Args:
+            file_ (flywheel.FileEntry): The file entry object to validate
+
+        Returns:
+            bool: Whether or not the file_ is curated correctly
+        """
+        return True
