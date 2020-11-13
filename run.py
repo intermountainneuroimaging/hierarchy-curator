@@ -11,7 +11,17 @@ log = logging.getLogger(__name__)
 
 if __name__ == "__main__":
     with GearToolkitContext() as gear_context:
-        gear_context.init_logging()
-        project, curator_path, input_files = parse_config(gear_context)
-        log.info("Curating project %s", project.label)
-        curate.main(gear_context.client, project, curator_path, **input_files)
+        gear_context.init_logging(
+            default_config_name=(
+                "debug" if gear_context.config.get("verbose") else "info"
+            )
+        )
+        parent, curator_path, input_files = parse_config(gear_context)
+        log.info(f"Curating {parent.container_type} {parent.label or parent.code}")
+        curate.main(
+            gear_context.client,
+            parent,
+            curator_path,
+            gear_context.config.get("write_report"),
+            **input_files,
+        )

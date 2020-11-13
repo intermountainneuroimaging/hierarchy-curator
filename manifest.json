@@ -2,11 +2,11 @@
   "name": "custom-curator",
   "label": "Custom Curator",
   "description": "Curates a project given a python Curator class. Using an implementation of the Curator Class (provided as an input file (e.g., curator.py)) this gear is able to curate an entire project, walking down the hierarchy through project, subject, session, acquisition, analysis, and file containers.",
-  "version": "0.1.0-dev",
+  "version": "0.1.0-dev-nate",
   "custom": {
     "gear-builder": {
       "category": "analysis",
-      "image": "flywheel/custom-curation:0.1.0-dev"
+      "image": "flywheel/custom-curation:0.1.0-dev-nate"
     },
     "flywheel": {
       "suite": "Curation"
@@ -27,8 +27,12 @@
     },
     "additional-input-one": {
       "base": "file",
-      "description": "An optional input for curation.",
-      "optional": true
+      "type": {
+        "enum": [
+          "dicom"
+        ]
+      },
+      "description": "Archive (.zip) containing DICOM files."
     },
     "additional-input-two": {
       "base": "file",
@@ -41,9 +45,19 @@
       "optional": true
     }
   },
-  "config": {},
-  "environment": {
+  "config": {
+    "write_report": {
+      "description": "Create output CSV report of curated elements.",
+      "type": "boolean",
+      "default": false
+    },
+    "verbose": {
+      "description": "Log debug messages",
+      "type": "boolean",
+      "default": false
+    }
   },
+  "environment": {},
   "command": "./run.py",
   "author": "Flywheel",
   "maintainer": "Flywheel <support@flywheel.io>",
