@@ -1,12 +1,44 @@
 import argparse
+import importlib
+from pathlib import Path
+import sys
 
 import flywheel
 
 from custom_curator import walker, utils
 
 
+def load_converter(curator_path: utils.PathLike):
+    """Load converter from the file, return the module.
+
+    Args:
+        curator_path (Path-like): Path to curator script.
+
+    Returns:
+        (module): A python module.
+    """
+    if isinstance(curator_path, str):
+        curator_path = Path(curator_path).resolve()
+    if curator_path.is_file():
+        old_syspath = sys.path[:]
+        try:
+            sys.path.append(str(curator_path.parent))
+            ## Investigate import statement
+            mod = importlib.import_module(curator_path.name.split(".")[0])
+            mod.filename = str(curator_path)
+        finally:
+            sys.path = old_syspath
+    else:
+        mod = None
+
+    return mod
+
+
 def get_curator(
-    client, curator_path: utils.PathLike, write_report: bool = False ** kwargs
+    client: flywheel.Client,
+    curator_path: utils.PathLike,
+    write_report: bool = False,
+    **kwargs
 ):
     """Returns an instantiated curator
 
@@ -15,11 +47,13 @@ def get_curator(
         curator_path (Path-like): A path to a curator module.
         **kwargs: Extra keyword arguments.
     """
-    curator = utils.load_converter(curator_path).Curator()
+    curator = load_converter(curator_path).Curator()
+
     curator.client = client
-    setattr(curator, "write_report", write_report)
+    curator.write_report = write_report
     for k, v in kwargs.items():
         setattr(curator, k, v)
+
     return curator
 
 
