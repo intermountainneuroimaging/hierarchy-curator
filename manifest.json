@@ -25,6 +25,11 @@
         ]
       }
     },
+    "optional-requirements": {
+      "base": "file",
+      "description": "Optional requirements.txt to install",
+      "optional": true
+    },
     "additional-input-one": {
       "base": "file",
       "type": {
