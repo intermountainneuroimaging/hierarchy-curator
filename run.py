@@ -2,6 +2,7 @@
 import logging
 
 from flywheel_gear_toolkit import GearToolkitContext
+from flywheel_gear_toolkit.utils.requirements import install_requirements
 
 from custom_curator import curate
 from custom_curator.parser import parse_config
@@ -16,7 +17,14 @@ if __name__ == "__main__":
                 "debug" if gear_context.config.get("verbose") else "info"
             )
         )
-        parent, curator_path, input_files = parse_config(gear_context)
+        parent, curator_path, input_files, optional_requirements = parse_config(
+            gear_context
+        )
+
+        if optional_requirements:
+            log.info(f"Installing requirements from {optional_requirements}")
+            install_requirements(optional_requirements)
+
         log.info(f"Curating {parent.container_type} {parent.label or parent.code}")
         curate.main(
             gear_context.client,
