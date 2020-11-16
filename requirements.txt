@@ -1,8 +1,0 @@
-flywheel-gear-toolkit==0.1.0rc4
-lxml~=4.5
-nibabel~=3.1
-pandas~=1.0
-Pillow~=7.1
-piexif~=1.1
-pydicom~=2.0
-pypng~=0.0.20
