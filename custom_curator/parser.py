@@ -1,3 +1,5 @@
+import subprocess
+
 """Flywheel gear context parser"""
 
 
@@ -20,6 +22,9 @@ def parse_config(gear_context):
     parent = get_parent_fn(analysis.parent.id)
 
     curator_path = gear_context.get_input_path("curator")
+    optional_requirements = None
+    optional_requirements = gear_context.get_input_path("optional-requirements")
+
     input_file_one = gear_context.get_input_path("additional-input-one")
     input_file_two = gear_context.get_input_path("additional-input-two")
     input_file_three = gear_context.get_input_path("additional-input-three")
@@ -28,4 +33,5 @@ def parse_config(gear_context):
         "input_file_two": input_file_two,
         "input_file_three": input_file_three,
     }
-    return parent, curator_path, input_files
+    return parent, curator_path, input_files, optional_requirements
+
