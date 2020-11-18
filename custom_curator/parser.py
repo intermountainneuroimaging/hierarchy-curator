@@ -1,4 +1,3 @@
-import subprocess
 
 """Flywheel gear context parser"""
 
@@ -14,6 +13,7 @@ def parse_config(gear_context):
             - parent container
             - curator path
             - dictionary of input files
+            - optional requirements file
     """
     analysis_id = gear_context.destination["id"]
     analysis = gear_context.client.get_analysis(analysis_id)

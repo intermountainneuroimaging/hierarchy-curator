@@ -5,11 +5,12 @@ import sys
 
 import flywheel
 
+from flywheel_gear_toolkit.utils import walker, datatypes
 from custom_curator import walker, utils
 
 
-def load_converter(curator_path: utils.PathLike):
-    """Load converter from the file, return the module.
+def load_curator(curator_path: datatypes.PathLike):
+    """Load curator from the file, return the module.
 
     Args:
         curator_path (Path-like): Path to curator script.
@@ -36,7 +37,7 @@ def load_converter(curator_path: utils.PathLike):
 
 def get_curator(
     client: flywheel.Client,
-    curator_path: utils.PathLike,
+    curator_path: datatypes.PathLike,
     write_report: bool = False,
     **kwargs
 ):

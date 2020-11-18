@@ -8,8 +8,8 @@ import logging
 
 import flywheel
 from flywheel_gear_toolkit import GearToolkitContext
+from flywheel_gear_toolkit.utils import curator
 
-from custom_curator import curator
 from custom_curator.reporters import CuratorErrorReporter
 
 
