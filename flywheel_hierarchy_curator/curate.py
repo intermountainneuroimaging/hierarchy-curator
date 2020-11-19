@@ -48,7 +48,7 @@ def get_curator(
         curator_path (Path-like): A path to a curator module.
         **kwargs: Extra keyword arguments.
     """
-    curator = load_converter(curator_path).Curator()
+    curator = load_curator(curator_path).Curator()
 
     curator.client = client
     curator.write_report = write_report
