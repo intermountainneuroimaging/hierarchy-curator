@@ -6,7 +6,6 @@ import sys
 import flywheel
 
 from flywheel_gear_toolkit.utils import walker, datatypes
-from custom_curator import walker, utils
 
 
 def load_curator(curator_path: datatypes.PathLike):
@@ -60,8 +59,8 @@ def get_curator(
 
 def main(
     client: flywheel.Client,
-    parent: utils.Container,
-    curator_path: utils.PathLike,
+    parent: datatypes.Container,
+    curator_path: datatypes.PathLike,
     **kwargs
 ):
     """Curates a flywheel project using a curator.
