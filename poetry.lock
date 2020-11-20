@@ -8,22 +8,23 @@ python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
 
 [[package]]
 name = "attrs"
-version = "20.1.0"
+version = "20.3.0"
 description = "Classes Without Boilerplate"
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
 
 [package.extras]
-dev = ["coverage[toml] (>=5.0.2)", "hypothesis", "pympler", "pytest (>=4.3.0)", "six", "zope.interface", "sphinx", "sphinx-rtd-theme", "pre-commit"]
-docs = ["sphinx", "sphinx-rtd-theme", "zope.interface"]
+dev = ["coverage[toml] (>=5.0.2)", "hypothesis", "pympler", "pytest (>=4.3.0)", "six", "zope.interface", "furo", "sphinx", "pre-commit"]
+docs = ["furo", "sphinx", "zope.interface"]
 tests = ["coverage[toml] (>=5.0.2)", "hypothesis", "pympler", "pytest (>=4.3.0)", "six", "zope.interface"]
+tests_no_zope = ["coverage[toml] (>=5.0.2)", "hypothesis", "pympler", "pytest (>=4.3.0)", "six"]
 
 [[package]]
 name = "certifi"
-version = "2020.6.20"
+version = "2020.11.8"
 description = "Python package for providing Mozilla's CA Bundle."
-category = "main"
+category = "dev"
 optional = false
 python-versions = "*"
 
@@ -31,7 +32,7 @@ python-versions = "*"
 name = "chardet"
 version = "3.0.4"
 description = "Universal encoding detector for Python 2 and 3"
-category = "main"
+category = "dev"
 optional = false
 python-versions = "*"
 
@@ -51,14 +52,28 @@ category = "dev"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, <4"
 
+[package.dependencies]
+toml = {version = "*", optional = true, markers = "extra == \"toml\""}
+
 [package.extras]
 toml = ["toml"]
+
+[[package]]
+name = "dotty-dict"
+version = "1.3.0"
+description = "Dictionary wrapper for quick access to deeply nested keys."
+category = "dev"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+setuptools_scm = "*"
 
 [[package]]
 name = "flywheel-bids"
 version = "0.9.1"
 description = "Flywheel BIDS Client"
-category = "main"
+category = "dev"
 optional = false
 python-versions = "*"
 
@@ -71,37 +86,27 @@ jsonschema = ">=2.6.0"
 name = "flywheel-gear-toolkit"
 version = "0.1.1"
 description = "Tooling for developing Flywheel gears"
-category = "main"
+category = "dev"
 optional = false
-python-versions = "*"
+    python-versions = "^3.7"
 
 [package.dependencies]
-attrs = {version = "20.1.0", markers = "python_version >= \"2.7\" and python_version not in \"3.0, 3.1, 3.2, 3.3\""}
-certifi = "2020.6.20"
-chardet = "3.0.4"
-flywheel-bids = "0.9.1"
-flywheel-gears = "0.2.0"
-flywheel-sdk = "12.4.0"
-future = {version = "0.18.2", markers = "python_version >= \"2.6\" and python_version not in \"3.0, 3.1, 3.2\""}
-idna = {version = "2.10", markers = "python_version >= \"2.7\" and python_version not in \"3.0, 3.1, 3.2, 3.3\""}
-jsonschema = "3.2.0"
-pyrsistent = "0.16.0"
-python-dateutil = {version = "2.8.1", markers = "python_version >= \"2.7\" and python_version not in \"3.0, 3.1, 3.2\""}
-requests = {version = "2.24.0", markers = "python_version >= \"2.7\" and python_version not in \"3.0, 3.1, 3.2, 3.3, 3.4\""}
-requests-toolbelt = "0.9.1"
-rfc3987 = "1.3.8"
-six = {version = "1.15.0", markers = "python_version >= \"2.7\" and python_version not in \"3.0, 3.1, 3.2\""}
-urllib3 = {version = "1.25.10", markers = "python_version >= \"2.7\" and python_version not in \"3.0, 3.1, 3.2, 3.3, 3.4\" and python_version < \"4\""}
-zipp = {version = "3.1.0", markers = "python_version >= \"3.6\""}
+dotty-dict = "^1.2.1"
+flywheel-bids = "^0.9.1"
+flywheel-gears = "^0.2.0"
+flywheel-sdk = "^14.2.0"
 
-[package.extras]
-dev = ["alabaster (0.7.12)", "appdirs (1.4.4)", "backcall (0.2.0)", "black (19.10b0)", "cached-property (1.5.1)", "cerberus (1.3.2)", "certifi (2020.6.20)", "chardet (3.0.4)", "decorator (4.4.2)", "distlib (0.3.1)", "dotty-dict (1.2.1)", "flywheel-bids (0.9.1)", "flywheel-gears (0.2.0)", "flywheel-sdk (12.4.0)", "iniconfig (1.0.1)", "ipython (7.17.0)", "ipython-genutils (0.2.0)", "jsonschema (3.2.0)", "mccabe (0.6.1)", "orderedmultidict (1.0.1)", "pathspec (0.8.0)", "pep517 (0.8.2)", "pickleshare (0.7.5)", "pipenv-setup (3.1.1)", "pipfile (0.0.2)", "ptyprocess (0.6.0)", "pycodestyle (2.6.0)", "pygments (2.6.1)", "pylint (2.6.0)", "pyrsistent (0.16.0)", "pytest (6.0.1)", "pytest-cov (2.10.1)", "pytz (2020.1)", "regex (2020.7.14)", "requests-toolbelt (0.9.1)", "rfc3987 (1.3.8)", "snowballstemmer (2.0.0)", "sphinx (3.2.1)", "sphinx-rtd-theme (0.5.0)", "toml (0.10.1)", "traitlets (4.3.3)", "wcwidth (0.2.5)", "wrapt (1.12.1)", "typed-ast (1.4.1)", "prompt-toolkit (3.0.6)", "importlib-metadata (1.7.0)", "future (0.18.2)", "pyparsing (2.4.7)", "plette[validation] (0.2.3)", "python-dateutil (2.8.1)", "six (1.15.0)", "attrs (20.1.0)", "babel (2.8.0)", "idna (2.10)", "imagesize (1.2.0)", "lazy-object-proxy (1.4.3)", "markupsafe (1.1.1)", "packaging (20.4)", "parso (0.7.1)", "pluggy (0.13.1)", "py (1.9.0)", "vistir (0.5.2)", "click (7.1.2)", "colorama (0.4.3)", "docutils (0.16)", "jedi (0.17.2)", "jinja2 (2.11.2)", "pip-shims (0.5.3)", "requests (2.24.0)", "requirementslib (1.5.13)", "setuptools-scm (4.1.2)", "tomlkit (0.7.0)", "wheel (0.35.1)", "coverage (5.2.1)", "urllib3 (1.25.10)", "astroid (2.4.2)", "more-itertools (8.4.0)", "sphinxcontrib-applehelp (1.0.2)", "sphinxcontrib-devhelp (1.0.2)", "sphinxcontrib-htmlhelp (1.0.3)", "sphinxcontrib-jsmath (1.0.1)", "sphinxcontrib-qthelp (1.0.3)", "sphinxcontrib-serializinghtml (1.1.4)", "zipp (3.1.0)", "isort (5.4.2)", "pexpect (4.8.0)", "appnope (0.1.0)"]
+[package.source]
+type = "git"
+url = "https://gitlab.com/flywheel-io/public/gear-toolkit.git"
+reference = "custom-curator"
+resolved_reference = "2ffe4f81b26c695afae8b8f509b817dd99a817cf"
 
 [[package]]
 name = "flywheel-gears"
 version = "0.2.0"
 description = "Flywheel Gear tools"
-category = "main"
+category = "dev"
 optional = false
 python-versions = "*"
 
@@ -111,9 +116,9 @@ rfc3987 = ">=1.3.7"
 
 [[package]]
 name = "flywheel-sdk"
-version = "12.4.0"
+version = "14.4.2"
 description = "Flywheel SDK"
-category = "main"
+category = "dev"
 optional = false
 python-versions = "*"
 
@@ -129,7 +134,7 @@ urllib3 = ">=1.15"
 name = "future"
 version = "0.18.2"
 description = "Clean single-source support for Python 3 and 2"
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=2.6, !=3.0.*, !=3.1.*, !=3.2.*"
 
@@ -137,7 +142,7 @@ python-versions = ">=2.6, !=3.0.*, !=3.1.*, !=3.2.*"
 name = "idna"
 version = "2.10"
 description = "Internationalized Domain Names in Applications (IDNA)"
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
 
@@ -153,7 +158,7 @@ python-versions = "*"
 name = "jsonschema"
 version = "3.2.0"
 description = "An implementation of JSON Schema validation for Python"
-category = "main"
+category = "dev"
 optional = false
 python-versions = "*"
 
@@ -300,14 +305,11 @@ python-versions = "*"
 
 [[package]]
 name = "pyrsistent"
-version = "0.16.0"
+version = "0.17.3"
 description = "Persistent/Functional/Immutable data structures"
-category = "main"
+category = "dev"
 optional = false
-python-versions = "*"
-
-[package.dependencies]
-six = "*"
+python-versions = ">=3.5"
 
 [[package]]
 name = "pytest"
@@ -381,9 +383,9 @@ python-versions = "*"
 
 [[package]]
 name = "requests"
-version = "2.24.0"
+version = "2.25.0"
 description = "Python HTTP for Humans."
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
 
@@ -391,7 +393,7 @@ python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
 certifi = ">=2017.4.17"
 chardet = ">=3.0.2,<4"
 idna = ">=2.5,<3"
-urllib3 = ">=1.21.1,<1.25.0 || >1.25.0,<1.25.1 || >1.25.1,<1.26"
+urllib3 = ">=1.21.1,<1.27"
 
 [package.extras]
 security = ["pyOpenSSL (>=0.14)", "cryptography (>=1.3.4)"]
@@ -401,7 +403,7 @@ socks = ["PySocks (>=1.5.6,<1.5.7 || >1.5.7)", "win-inet-pton"]
 name = "requests-toolbelt"
 version = "0.9.1"
 description = "A utility belt for advanced users of python-requests"
-category = "main"
+category = "dev"
 optional = false
 python-versions = "*"
 
@@ -412,9 +414,20 @@ requests = ">=2.0.1,<3.0.0"
 name = "rfc3987"
 version = "1.3.8"
 description = "Parsing and validation of URIs (RFC 3986) and IRIs (RFC 3987)"
-category = "main"
+category = "dev"
 optional = false
 python-versions = "*"
+
+[[package]]
+name = "setuptools-scm"
+version = "4.1.2"
+description = "the blessed package to manage your versions by scm tags"
+category = "dev"
+optional = false
+python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,>=2.7"
+
+[package.extras]
+toml = ["toml"]
 
 [[package]]
 name = "six"
@@ -434,33 +447,21 @@ python-versions = ">=2.6, !=3.0.*, !=3.1.*, !=3.2.*"
 
 [[package]]
 name = "urllib3"
-version = "1.25.10"
+version = "1.26.2"
 description = "HTTP library with thread-safe connection pooling, file post, and more."
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, <4"
 
 [package.extras]
 brotli = ["brotlipy (>=0.6.0)"]
-secure = ["certifi", "cryptography (>=1.3.4)", "idna (>=2.0.0)", "pyOpenSSL (>=0.14)", "ipaddress"]
+secure = ["pyOpenSSL (>=0.14)", "cryptography (>=1.3.4)", "idna (>=2.0.0)", "certifi", "ipaddress"]
 socks = ["PySocks (>=1.5.6,<1.5.7 || >1.5.7,<2.0)"]
-
-[[package]]
-name = "zipp"
-version = "3.1.0"
-description = "Backport of pathlib-compatible object wrapper for zip files"
-category = "main"
-optional = false
-python-versions = ">=3.6"
-
-[package.extras]
-docs = ["sphinx", "jaraco.packaging (>=3.2)", "rst.linker (>=1.9)"]
-testing = ["jaraco.itertools", "func-timeout"]
 
 [metadata]
 lock-version = "1.1"
-python-versions = "^3.8"
-content-hash = "6a046659d0757939e28b29c1e996ac21d984b6c7d7a8ea20fc97ce30c8afb733"
+    python-versions = "^3.8"
+content-hash = "49b52be33916414cad74f5e4edbdc7f4f1c9e6bbb0cb163bf6bc2146523911c9"
 
 [metadata.files]
 atomicwrites = [
@@ -468,12 +469,12 @@ atomicwrites = [
     {file = "atomicwrites-1.4.0.tar.gz", hash = "sha256:ae70396ad1a434f9c7046fd2dd196fc04b12f9e91ffb859164193be8b6168a7a"},
 ]
 attrs = [
-    {file = "attrs-20.1.0-py2.py3-none-any.whl", hash = "sha256:2867b7b9f8326499ab5b0e2d12801fa5c98842d2cbd22b35112ae04bf85b4dff"},
-    {file = "attrs-20.1.0.tar.gz", hash = "sha256:0ef97238856430dcf9228e07f316aefc17e8939fc8507e18c6501b761ef1a42a"},
+    {file = "attrs-20.3.0-py2.py3-none-any.whl", hash = "sha256:31b2eced602aa8423c2aea9c76a724617ed67cf9513173fd3a4f03e3a929c7e6"},
+    {file = "attrs-20.3.0.tar.gz", hash = "sha256:832aa3cde19744e49938b91fea06d69ecb9e649c93ba974535d08ad92164f700"},
 ]
 certifi = [
-    {file = "certifi-2020.6.20-py2.py3-none-any.whl", hash = "sha256:8fc0819f1f30ba15bdb34cceffb9ef04d99f420f68eb75d901e9560b8749fc41"},
-    {file = "certifi-2020.6.20.tar.gz", hash = "sha256:5930595817496dd21bb8dc35dad090f1c2cd0adfaf21204bf6732ca5d8ee34d3"},
+    {file = "certifi-2020.11.8-py2.py3-none-any.whl", hash = "sha256:1f422849db327d534e3d0c5f02a263458c3955ec0aae4ff09b95f195c59f4edd"},
+    {file = "certifi-2020.11.8.tar.gz", hash = "sha256:f05def092c44fbf25834a51509ef6e631dc19765ab8a57b4e7ab85531f0a9cf4"},
 ]
 chardet = [
     {file = "chardet-3.0.4-py2.py3-none-any.whl", hash = "sha256:fc323ffcaeaed0e0a02bf4d117757b98aed530d9ed4531e3e15460124c106691"},
@@ -519,17 +520,18 @@ coverage = [
     {file = "coverage-5.3-cp39-cp39-win_amd64.whl", hash = "sha256:47a11bdbd8ada9b7ee628596f9d97fbd3851bd9999d398e9436bd67376dbece7"},
     {file = "coverage-5.3.tar.gz", hash = "sha256:280baa8ec489c4f542f8940f9c4c2181f0306a8ee1a54eceba071a449fb870a0"},
 ]
+dotty-dict = [
+    {file = "dotty_dict-1.3.0.tar.gz", hash = "sha256:eb0035a3629ecd84397a68f1f42f1e94abd1c34577a19cd3eacad331ee7cbaf0"},
+]
 flywheel-bids = [
     {file = "flywheel_bids-0.9.1-py2.py3-none-any.whl", hash = "sha256:da035b43823b3960e7eec99d3f2345d9ce905c54412d18f91c2b5fb349ca1584"},
 ]
-flywheel-gear-toolkit = [
-    {file = "flywheel_gear_toolkit-0.1.1-py2.py3-none-any.whl", hash = "sha256:39e0e62fc117f43190fd14da2ab48d3727cd2a1466dcdca790b637e35f166b60"},
-]
+flywheel-gear-toolkit = []
 flywheel-gears = [
     {file = "flywheel_gears-0.2.0-py2.py3-none-any.whl", hash = "sha256:0d89081ec0ea6beb67fe7dc21b093e12b7953622e36c8ceeb7d13a7606a36735"},
 ]
 flywheel-sdk = [
-    {file = "flywheel_sdk-12.4.0-py2.py3-none-any.whl", hash = "sha256:25872b39cb029657e264b17d9154ad6caaf2ccfb40ce15134ff9b597a5a6aed8"},
+    {file = "flywheel_sdk-14.4.2-py2.py3-none-any.whl", hash = "sha256:7b81af8d64b228a623b88f36176ebf8385aa6a74bf84a9874441167f02856f70"},
 ]
 future = [
     {file = "future-0.18.2.tar.gz", hash = "sha256:b1bead90b70cf6ec3f0710ae53a525360fa360d306a86583adc6bf83a4db537d"},
@@ -709,7 +711,7 @@ pypng = [
     {file = "pypng-0.0.20.tar.gz", hash = "sha256:1032833440c91bafee38a42c38c02d00431b24c42927feb3e63b104d8550170b"},
 ]
 pyrsistent = [
-    {file = "pyrsistent-0.16.0.tar.gz", hash = "sha256:28669905fe725965daa16184933676547c5bb40a5153055a8dee2a4bd7933ad3"},
+    {file = "pyrsistent-0.17.3.tar.gz", hash = "sha256:2e636185d9eb976a18a8a8e96efce62f2905fea90041958d8cc2a189756ebf3e"},
 ]
 pytest = [
     {file = "pytest-6.1.2-py3-none-any.whl", hash = "sha256:4288fed0d9153d9646bfcdf0c0428197dba1ecb27a33bb6e031d002fa88653fe"},
@@ -732,8 +734,8 @@ pytz = [
     {file = "pytz-2020.4.tar.gz", hash = "sha256:3e6b7dd2d1e0a59084bcee14a17af60c5c562cdc16d828e8eba2e683d3a7e268"},
 ]
 requests = [
-    {file = "requests-2.24.0-py2.py3-none-any.whl", hash = "sha256:fe75cc94a9443b9246fc7049224f75604b113c36acb93f87b80ed42c44cbb898"},
-    {file = "requests-2.24.0.tar.gz", hash = "sha256:b3559a131db72c33ee969480840fff4bb6dd111de7dd27c8ee1f820f4f00231b"},
+    {file = "requests-2.25.0-py2.py3-none-any.whl", hash = "sha256:e786fa28d8c9154e6a4de5d46a1d921b8749f8b74e28bde23768e5e16eece998"},
+    {file = "requests-2.25.0.tar.gz", hash = "sha256:7f1a0b932f4a60a1a65caa4263921bb7d9ee911957e0ae4a23a6dd08185ad5f8"},
 ]
 requests-toolbelt = [
     {file = "requests-toolbelt-0.9.1.tar.gz", hash = "sha256:968089d4584ad4ad7c171454f0a5c6dac23971e9472521ea3b6d49d610aa6fc0"},
@@ -742,6 +744,16 @@ requests-toolbelt = [
 rfc3987 = [
     {file = "rfc3987-1.3.8-py2.py3-none-any.whl", hash = "sha256:10702b1e51e5658843460b189b185c0366d2cf4cff716f13111b0ea9fd2dce53"},
     {file = "rfc3987-1.3.8.tar.gz", hash = "sha256:d3c4d257a560d544e9826b38bc81db676890c79ab9d7ac92b39c7a253d5ca733"},
+]
+setuptools-scm = [
+    {file = "setuptools_scm-4.1.2-py2.7.egg", hash = "sha256:b42c150c34d6120babf3646abd7513e032be2e230b3d2034f27404c65aa0c977"},
+    {file = "setuptools_scm-4.1.2-py2.py3-none-any.whl", hash = "sha256:69258e2eeba5f7ce1ed7a5f109519580fa3578250f8e4d6684859f86d1b15826"},
+    {file = "setuptools_scm-4.1.2-py3.5.egg", hash = "sha256:09c659d1d6680811c43f476a33c6d3d9872416580786e96bd29ea03e6a818e41"},
+    {file = "setuptools_scm-4.1.2-py3.6.egg", hash = "sha256:731550a27e3901ee501c3bf99140b5436b8eeba341a9d19911cf364b8d573293"},
+    {file = "setuptools_scm-4.1.2-py3.7.egg", hash = "sha256:efc928d6a64162c88cdc85fa4b84adfbd6dbf9f9b04319bc495eb16dcfaae00a"},
+    {file = "setuptools_scm-4.1.2-py3.8.egg", hash = "sha256:eaaec16b7af25c5f532b5af2332213bb6223d15cca4518f6dbc4c055641c86fd"},
+    {file = "setuptools_scm-4.1.2-py3.9.egg", hash = "sha256:892e63b4983f9e30f9e8bf89ad03d2a02a47e6e5ced09b03ae6fe952ade8a579"},
+    {file = "setuptools_scm-4.1.2.tar.gz", hash = "sha256:a8994582e716ec690f33fec70cca0f85bd23ec974e3f783233e4879090a7faa8"},
 ]
 six = [
     {file = "six-1.15.0-py2.py3-none-any.whl", hash = "sha256:8b74bedcbbbaca38ff6d7491d76f2b06b3592611af620f8426e82dddb04a5ced"},
@@ -752,10 +764,6 @@ toml = [
     {file = "toml-0.10.2.tar.gz", hash = "sha256:b3bda1d108d5dd99f4a20d24d9c348e91c4db7ab1b749200bded2f839ccbe68f"},
 ]
 urllib3 = [
-    {file = "urllib3-1.25.10-py2.py3-none-any.whl", hash = "sha256:e7983572181f5e1522d9c98453462384ee92a0be7fac5f1413a1e35c56cc0461"},
-    {file = "urllib3-1.25.10.tar.gz", hash = "sha256:91056c15fa70756691db97756772bb1eb9678fa585d9184f24534b100dc60f4a"},
-]
-zipp = [
-    {file = "zipp-3.1.0-py3-none-any.whl", hash = "sha256:aa36550ff0c0b7ef7fa639055d797116ee891440eac1a56f378e2d3179e0320b"},
-    {file = "zipp-3.1.0.tar.gz", hash = "sha256:c599e4d75c98f6798c509911d08a22e6c021d074469042177c8c86fb92eefd96"},
+    {file = "urllib3-1.26.2-py2.py3-none-any.whl", hash = "sha256:d8ff90d979214d7b4f8ce956e80f4028fc6860e4431f731ea4a8c08f23f99473"},
+    {file = "urllib3-1.26.2.tar.gz", hash = "sha256:19188f96923873c92ccb987120ec4acaa12f0461fa9ce5d3d0772bc965a39e08"},
 ]
