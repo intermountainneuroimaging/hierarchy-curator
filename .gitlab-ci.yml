@@ -13,7 +13,7 @@ stages:
   - publish
 
 variables:
-  PYTHON_VERSION: '3.7'
+  PYTHON_VERSION: '3.8'
   PACKAGE_DIR: flywheel_hierarchy_curator/
   PYLINT: "false"
   PYCODESTYLE: "false"
