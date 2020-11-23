@@ -8,6 +8,6 @@ RUN pip install -r /opt/requirements.txt \
     && mkdir -p $FLYWHEEL
 
 COPY run.py manifest.json $FLYWHEEL/
-COPY custom_curator $FLYWHEEL/custom_curator
+COPY flywheel_hierarchy_curator $FLYWHEEL/flywheel_hierarchy_curator
 
 WORKDIR $FLYWHEEL
