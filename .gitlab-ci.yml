@@ -78,6 +78,7 @@ build:docker:
     - docker push $CI_REGISTRY_IMAGE:latest
     - docker push $CI_REGISTRY_IMAGE:$VERSION-test
     - docker push $CI_REGISTRY_IMAGE:latest-test
+  needs:  ['pre:deps']
 
 
 test:unit:
