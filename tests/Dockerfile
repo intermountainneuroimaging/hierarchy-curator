@@ -1,3 +1,4 @@
+ARG BASE
 FROM ${BASE}
 MAINTAINER Flywheel <support@flywheel.io>
 
