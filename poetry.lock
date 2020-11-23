@@ -99,8 +99,8 @@ flywheel-sdk = "^14.2.0"
 [package.source]
 type = "git"
 url = "https://gitlab.com/flywheel-io/public/gear-toolkit.git"
-reference = "custom-curator"
-resolved_reference = "2ffe4f81b26c695afae8b8f509b817dd99a817cf"
+reference = "custom-curator-reporters"
+resolved_reference = "32d21585a33befb48a9d75025113c78a5dbb75c1"
 
 [[package]]
 name = "flywheel-gears"
@@ -461,7 +461,7 @@ socks = ["PySocks (>=1.5.6,<1.5.7 || >1.5.7,<2.0)"]
 [metadata]
 lock-version = "1.1"
     python-versions = "^3.8"
-content-hash = "49b52be33916414cad74f5e4edbdc7f4f1c9e6bbb0cb163bf6bc2146523911c9"
+content-hash = "7cdf617bee95672a0b20346948c32b1d433c13312600a58caad8e91bceea1f4c"
 
 [metadata.files]
 atomicwrites = [
