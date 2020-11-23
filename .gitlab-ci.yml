@@ -1,0 +1,111 @@
+include:
+  - project: flywheel-io/infrastructure/ci-templates
+    ref: master
+    file: python3.yml
+  
+stages:
+  - pre
+  - build
+  - test
+  - publish
+
+variables:
+  PYTHON_VERSION: '3.7'
+  PACKAGE_DIR: flywheel_hierarchy_curator/
+  PYLINT: "false"
+  PYCODESTYLE: "false"
+  BLACK: "true"
+  PYPI: "true"
+  PIP_EXTRA: "[dev]"
+  DOC: "true"
+  POETRY: "true"
+  PYTEST_COVERAGE: "true"
+  CACHE_DIR: "$CI_PROJECT_DIR/.cache"
+
+.python-gears-poetry:
+  image: python:${PYTHON_VERSION}-buster
+  variables:
+    PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+    PYTHONUSERBASE: "$CI_PROJECT_DIR/.cache/user-site"
+  cache:
+    key: ${CI_COMMIT_REF_SLUG}
+    paths:
+      - .cache/pip
+      - .cache/user-site/
+      - .cache/virtualenvs
+  before_script:
+    - apt-get update && apt-get install git
+    - export PATH="$PATH:$PYTHONUSERBASE/bin"
+    - mkdir -p .cache/user-site/
+    - python3 -m pip install isort black poetry
+    - poetry config virtualenvs.path "$CACHE_DIR/virtualenvs"
+    - poetry install
+
+pre:format:
+  extends: .python-gears-poetry
+  stage: pre
+  script:
+    - '[ $ISORT = "true" ] && python3 -m isort $CI_PROJECT_DIR'
+    - '[ $BLACK = "true" ] && python3 -m black $BLACK_ARGS $CI_PROJECT_DIR'
+  
+pre:deps:
+  extends: .python-gears-poetry
+  stage: pre
+  script:
+    - poetry export --without-hashes -f requirements.txt > requirements.txt
+    - poetry export --without-hashes --dev -f requirements.txt > tests/requirements.txt
+  artifacts:
+    paths:
+      - requirements.txt
+      - tests/requirements.txt
+
+build:docker:
+  stage: build
+  extends: .docker-dind
+  before_script:
+    - apk add jq
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    # Need -r (raw) so that value doesn't print strings
+    - export VERSION=$(cat manifest.json | jq -r '.version')
+  script:
+    - docker pull $CI_REGISTRY_IMAGE:latest || true
+    - docker build --cache-from $CI_REGISTRY_IMAGE:latest --tag $CI_REGISTRY_IMAGE:$VERSION --tag $CI_REGISTRY_IMAGE:latest -f Dockerfile .
+    - docker build --cache-from $CI_REGISTRY_IMAGE:latest-test --build-arg BASE=$CI_REGISTRY_IMAGE:latest --tag $CI_REGISTRY_IMAGE:$VERSION-test --tag $CI_REGISTRY_IMAGE:latest-test -f tests/Dockerfile .
+    - docker push $CI_REGISTRY_IMAGE:$VERSION
+    - docker push $CI_REGISTRY_IMAGE:latest
+    - docker push $CI_REGISTRY_IMAGE:$VERSION-test
+    - docker push $CI_REGISTRY_IMAGE:latest-test
+
+
+test:unit:
+  image: $CI_REGISTRY_IMAGE:latest-test
+  stage: test
+  only:
+    variables:
+      - $PYTEST == "true"
+  script:
+    - |
+      if [ $PYTEST_COVERAGE = "true" ]; then
+        export PYTEST_ARGS="${PYTEST_ARGS} --cov=${PACKAGE_DIR}"
+      fi
+    - '[ $PYTEST = "true" ] && python3 -m pytest $PYTEST_ARGS $TESTDIR'
+    - |
+      if [ $PYTEST_COVERAGE = "true" ]; then
+        python3 -m coverage xml
+      fi
+  artifacts:
+    reports:
+      cobertura: coverage.xml
+
+#test:integration:
+  # TODO:
+
+#publish:doc:
+#L  stage: publish
+
+
+
+
+          
+    
+      
