@@ -34,6 +34,23 @@ testpaths = [
     "tests",
 ]
 
+[tool.black]
+exclude = '''
+  /(
+      \.eggs         # exclude a few common directories in the
+    | \.git          # root of the project
+    | \.hg
+    | \.mypy_cache
+    | \.tox
+    | \.venv
+    | _build
+    | buck-out
+    | build
+    | dist
+    | \.cache
+  )/
+'''
+
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
