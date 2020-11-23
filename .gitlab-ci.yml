@@ -49,7 +49,9 @@ pre:format:
   stage: pre
   script:
     - '[ $ISORT = "true" ] && python3 -m isort $CI_PROJECT_DIR'
-    - '[ $BLACK = "true" ] && python3 -m black $BLACK_ARGS $CI_PROJECT_DIR'
+    - |
+      '[ $BLACK = "true" ] && \
+      python3 -m black $BLACK_ARGS --exclude='/(\.eggs|\.git|\.hg|\.mypy_cache|\.nox|\.tox|\.venv|\.svn|_build|buck-out|build|dist|\.cache)/'  $CI_PROJECT_DIR'
   
 pre:deps:
   extends: .python-gears-poetry
