@@ -74,7 +74,7 @@ main() {
 
     if [ "$BLACK_TOGGLE" != true -a "$DOC_TOGGLE" != true ]; then
         log "INFO: Running tests ..."
-        pytest tests --exitfirst --cov=custom_curator --cov-report= "$@"
+        pytest tests "$@"
 
         log "INFO: Reporting coverage ..."
         local COVERAGE_ARGS="--skip-covered"

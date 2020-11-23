@@ -1,4 +1,3 @@
-
 """Flywheel gear context parser"""
 
 
@@ -34,4 +33,3 @@ def parse_config(gear_context):
         "input_file_three": input_file_three,
     }
     return parent, curator_path, input_files, optional_requirements
-
