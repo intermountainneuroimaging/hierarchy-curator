@@ -2,6 +2,9 @@ include:
   - project: flywheel-io/infrastructure/ci-templates
     ref: master
     file: python3.yml
+  - project: flywheel-io/infrastructure/ci-templates
+    ref: master
+    file: docker-dind.yml
   
 stages:
   - pre
