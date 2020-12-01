@@ -29,6 +29,6 @@ if __name__ == "__main__":
             gear_context.client,
             parent,
             curator_path,
-            gear_context.config.get("write_report"),
+            write_report=gear_context.config.get("write_report"),
             **input_files,
         )
