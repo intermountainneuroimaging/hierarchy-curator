@@ -2,7 +2,7 @@
 import logging
 
 from flywheel_gear_toolkit import GearToolkitContext
-from flywheel_gear_toolkit.utils.requirements import install_requirements
+from flywheel_gear_toolkit.utils import install_requirements
 
 from flywheel_hierarchy_curator import curate, parser
 
