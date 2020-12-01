@@ -1,12 +1,12 @@
 {
-  "name": "custom-curator",
-  "label": "Custom Curator",
-  "description": "Curates a project given a python Curator class. Using an implementation of the Curator Class (provided as an input file (e.g., curator.py)) this gear is able to curate an entire project, walking down the hierarchy through project, subject, session, acquisition, analysis, and file containers.",
-  "version": "0.1.0-dev-nate",
+  "name": "hierarchy-curator",
+  "label": "Hierarchty Curator",
+  "description": "Curates a container in the flywheel hierarchy given a python HierarchyCurator class. Using an implementation of the HierarchyCurator Class (provided as an input file (e.g., curator.py)) this gear is able to curate an entire project, walking down the hierarchy through project, subject, session, acquisition, analysis, and file containers.",
+  "version": "1.0.0-dev.1",
   "custom": {
     "gear-builder": {
       "category": "analysis",
-      "image": "flywheel/custom-curation:0.1.0-dev-nate"
+      "image": "flywheel/hierarchy-curator:1.0.0-dev.1"
     },
     "flywheel": {
       "suite": "Curation"
