@@ -26,7 +26,7 @@ if __name__ == "__main__":
 
         log.info(f"Curating {parent.container_type} {parent.label or parent.code}")
         curate.main(
-            gear_context.client,
+            gear_context,
             parent,
             curator_path,
             write_report=gear_context.config.get("write_report"),
