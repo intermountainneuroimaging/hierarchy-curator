@@ -4,6 +4,7 @@ from pathlib import Path
 import sys
 
 import flywheel
+from flywheel_gear_toolkit import GearToolkitContext
 
 from flywheel_gear_toolkit.utils import walker, datatypes
 
@@ -47,18 +48,14 @@ def get_curator(
         curator_path (Path-like): A path to a curator module.
         **kwargs: Extra keyword arguments.
     """
-    curator = load_curator(curator_path).Curator()
-
-    curator.client = client
-    curator.write_report = write_report
-    for k, v in kwargs.items():
-        setattr(curator, k, v)
+    curator_mod = load_curator(curator_path)
+    curator = curator_mod.Curator(client=client, write_report=write_report, **kwargs)
 
     return curator
 
 
 def main(
-    client: flywheel.Client,
+    context: GearToolkitContext,
     parent: datatypes.Container,
     curator_path: datatypes.PathLike,
     **kwargs
