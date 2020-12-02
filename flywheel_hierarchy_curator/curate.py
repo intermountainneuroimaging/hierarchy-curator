@@ -36,7 +36,7 @@ def load_curator(curator_path: datatypes.PathLike):
 
 
 def get_curator(
-    client: flywheel.Client,
+    context: GearToolkitContext,
     curator_path: datatypes.PathLike,
     write_report: bool = False,
     **kwargs
@@ -49,7 +49,7 @@ def get_curator(
         **kwargs: Extra keyword arguments.
     """
     curator_mod = load_curator(curator_path)
-    curator = curator_mod.Curator(client=client, write_report=write_report, **kwargs)
+    curator = curator_mod.Curator(context=context, write_report=write_report, **kwargs)
 
     return curator
 
@@ -68,7 +68,7 @@ def main(
         curator_path (Path-like): A path to a curator module.
         kwargs (dict): Dictionary of attributes/value to set on curator.
     """
-    curator = get_curator(client, curator_path, **kwargs)
+    curator = get_curator(context, curator_path, **kwargs)
 
     project_walker = walker.Walker(parent, depth_first=curator.depth_first)
 
