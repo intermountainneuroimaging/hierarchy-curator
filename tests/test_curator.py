@@ -1,11 +1,12 @@
 from pathlib import Path
-
+import sys
+import pytest
 from flywheel_hierarchy_curator.curate import main, get_curator, load_curator
 
 ASSETS_DIR = Path(__file__).parent / "assets"
 
 
-def test_get_curator(fw_project):
+def test_get_curator():
     client = None
     curator_path = ASSETS_DIR / "dummy_curator.py"
     curator = get_curator(client, curator_path, extra_arg="Test")
@@ -13,7 +14,8 @@ def test_get_curator(fw_project):
     assert curator.extra_arg == "Test"
     assert str(type(curator)) == "<class 'dummy_curator.Curator'>"
 
-
+@pytest.mark.skip(reason='Import fw_project fixture from flywheel_Gear_toolkit')
+@pytest.mark.usefixtures('fw_project')
 def test_curate_main_with_a_dummy_curator(fw_project):
     client = None
     project = fw_project(n_subjects=1)
@@ -44,5 +46,5 @@ def test_load_curator_returns_module():
     assert "dummy_curator" in sys.modules.keys()
 
     # Returns None if path is corrupted
-    mod = load_converter(str(ASSETS_DIR / "doesnotexist.py"))
+    mod = load_curator(str(ASSETS_DIR / "doesnotexist.py"))
     assert mod is None
