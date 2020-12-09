@@ -9,7 +9,7 @@ from flywheel_gear_toolkit.utils.reporters import AggregatedReporter
 from flywheel_gear_toolkit.utils import curator
 from flywheel_gear_toolkit import GearToolkitContext
 
-log = logging.getLogger("dicom_tag_splitter")
+log = logging.getLogger("deidentify_patient_weight")
 log.setLevel("DEBUG")
 
 
@@ -50,8 +50,12 @@ class Curator(curator.HierarchyCurator):
                 if os.path.isfile(dcm_path):
                     try:
                         dcm = pydicom.dcmread(dcm_path)
-                        # Randomly adjust patient weight for deidentify
+                        # Randomly adjust patient weight for deidentify (Adding "jitter")
                         setattr(dcm,'PatientWeight', dcm.get('PatientWeight')+ random.randint(-10,10))
                     except:
-                        pass
+                        self.reporter.append_log(
+                            err="Cannot set PatientWeight",
+                            container_type='file',
+                            label=file_.name
+                        )
         log.warning("Not a zip")
