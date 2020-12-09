@@ -1,5 +1,6 @@
 import argparse
 import importlib
+import logging
 import sys
 from pathlib import Path
 
@@ -8,6 +9,7 @@ from flywheel_gear_toolkit import GearToolkitContext
 from flywheel_gear_toolkit.utils import datatypes, walker
 
 
+log = logging.getLogger(__name__)
 def load_curator(curator_path: datatypes.PathLike):
     """Load curator from the file, return the module.
 
@@ -74,7 +76,7 @@ def main(
         for container in project_walker.walk():  # pragma: no cover
             curator.curate_container(container)  # Tested in gear toolkit
     except Exception:
-        log.err('Uncaught Exception',exc_info=True)
+        log.error('Uncaught Exception',exc_info=True)
         curator.__del__()
 
 
