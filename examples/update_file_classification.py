@@ -8,8 +8,8 @@ import logging
 from pathlib import Path
 
 import flywheel
-from flywheel_gear_toolkit.utils.reporters import AggregatedReporter
 from flywheel_gear_toolkit.utils.curator import HierarchyCurator
+from flywheel_gear_toolkit.utils.reporters import AggregatedReporter
 
 log = logging.getLogger("my_curator")
 log.setLevel("DEBUG")
@@ -20,18 +20,17 @@ class Curator(HierarchyCurator):
         super().__init__(**kwargs)
         self.reporter = None
         if self.write_report:
-            log.info('Initiating reporter')
+            log.info("Initiating reporter")
             self.reporter = AggregatedReporter(
-                output_path=(Path(self.context.output_dir) / 'out.csv')
+                output_path=(Path(self.context.output_dir) / "out.csv")
             )
 
     def curate_project(self, project: flywheel.Project):
         self.reporter.append_log(
-            container_type='project',
-            label=project.label, 
-            msg=f'Curating files under project {project.label}'
+            container_type="project",
+            label=project.label,
+            msg=f"Curating files under project {project.label}",
         )
-
 
     def curate_subject(self, subject: flywheel.Subject):
         pass
@@ -53,13 +52,13 @@ class Curator(HierarchyCurator):
             else:
                 file_.update_classification(new_classification)
                 self.reporter.append_log(
-                    container_type='file',
-                    label=file_.name
+                    container_type="file",
+                    label=file_.name,
                     msg=f"file {file.name} classification updated to {new_classification}",
                 )
         except Exception as exc:
             self.reporter.append_log(
-                container_type='file'
+                container_type="file",
                 err=str(exc),
                 label=file_.name,
                 resolved="False",

@@ -1,16 +1,16 @@
 import json
 import logging
-from pathlib import Path
 import os
 import random
 import tempfile
 import zipfile
+from pathlib import Path
 
 import flywheel
 import pydicom
-from flywheel_gear_toolkit.utils.reporters import AggregatedReporter
-from flywheel_gear_toolkit.utils import curator
 from flywheel_gear_toolkit import GearToolkitContext
+from flywheel_gear_toolkit.utils import curator
+from flywheel_gear_toolkit.utils.reporters import AggregatedReporter
 
 log = logging.getLogger("deidentify_patient_weight")
 log.setLevel("DEBUG")
@@ -43,7 +43,7 @@ class Curator(curator.HierarchyCurator):
             msg=f"Curating {len(acquisition.files)} files",
             resolved=True,
             err="",
-            search_key=""
+            search_key="",
         )
 
     def curate_analysis(self, analysis):
@@ -61,7 +61,7 @@ class Curator(curator.HierarchyCurator):
             file_.download(str(f_read_path))
             # try:
             zip_read = zipfile.ZipFile(str(f_read_path))
-            zip_write = zipfile.ZipFile(str(f_write_path), 'w')
+            zip_write = zipfile.ZipFile(str(f_write_path), "w")
 
             for n in range(len(zip_read.namelist())):
                 dcm_path = zip_read.extract(

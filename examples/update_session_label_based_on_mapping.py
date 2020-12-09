@@ -3,14 +3,14 @@ An example curation script to correct the session.label based on a predefined
 mapping and the classification based on the Dicom SeriesDescription data element.
 """
 
+import dataclasses
 import json
 import logging
-import dataclasses
 from pathlib import Path
 
 import flywheel
-from flywheel_gear_toolkit.utils.reporters import AggregatedReporter, BaseLogRecord
 from flywheel_gear_toolkit.utils.curator import HierarchyCurator
+from flywheel_gear_toolkit.utils.reporters import AggregatedReporter, BaseLogRecord
 
 log = logging.getLogger("my_curator")
 log.setLevel("DEBUG")
@@ -27,6 +27,7 @@ SESSION_LABEL_CORRECTION = {
     "w48": "Week_48",
     "REV1": "Relapse_Evaluation_1",
 }
+
 
 @dataclasses.dataclass
 class MapLogRecord(BaseLogRecord):
@@ -46,11 +47,12 @@ class Curator(HierarchyCurator):
 
         self.reporter = None
         if self.write_report:
-            log.info('Initiating reporter')
+            log.info("Initiating reporter")
             self.reporter = AggregatedReporter(
-                output_path=(Path(self.context.output_dir) / 'out.csv'),
-                format=MapLogRecord # Use custom log record
+                output_path=(Path(self.context.output_dir) / "out.csv"),
+                format=MapLogRecord,  # Use custom log record
             )
+
     def curate_project(self, project: flywheel.Project):
         pass
 
@@ -64,7 +66,7 @@ class Curator(HierarchyCurator):
             if new_label:
                 session.update({"label": new_label})
                 self.reporter.append_log(
-                    msg=f'updated session label to {new_label}',
+                    msg=f"updated session label to {new_label}",
                     subject_label=session.subject.id,
                     subject_id=session.subject.id,
                     session_label=session.label,
