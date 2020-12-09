@@ -1,8 +1,7 @@
-[![CircleCI](https://circleci.com/gh/flywheel-apps/custom-curator.svg?style=shield)](https://app.circleci.com/pipelines/github/flywheel-apps/custom-curator)
 
-# Custom Curation Gear
+# Custom Hierarchy Curation Gear
 There are a lot of cases where specific logic must be used to curate a given project. 
-This custom curation gear is able to take an implementation of the Curator Class 
+This hierarchy curation gear is able to take an implementation of the HierarchyCurator Class 
 (provided as an input file (e.g., curator.py)), instantiate it and 
 execute it on a project, walking down the hierarchy through project, subject, session, 
 acquisition, analysis and file containers.
@@ -10,21 +9,22 @@ acquisition, analysis and file containers.
 ## Gear Inputs
 
 ### Required
-* **curator**: Python script (e.g. curator.py) that implemented the `Curator` class. 
-More details [below](#curator-class).
+* **curator**: Python script (e.g. curator.py) that implemented the `HierarchyCurator` class. 
+More details at the [Flywheel Gear Toolkit docs](https://gear-toolkit.readthedocs.io/en/latest/utils.html#curator).
 ### Optional
+* **optional_requirements**: Optional requirements.txt dependencies to be installed at runtime.
 * **input_file_one**: Additional file to be used by the curator. 
 * **input_file_two**: Additional file to be used by the curator.
 * **input_file_three**: Additional file to be used by the curator.
 
-## <a name="curator-class"></a>The Curator Class
+## HierarchyCurator
 The curator class must be defined in a python script which is provided to the gear
-as an input. This class must be named `Curator` and must inherit from `curator.Curator`
+as an input. This class must be named `Curator` and must inherit from `flywheel_gear_toolkit.utils.curators.HierarchyCurator`
 class:
 ```python
-import curator
+from flywheel_gear_toolit.utils.curator import HierarchyCurator
 
-class MyCurator(curator.Curator):
+class Curator(HierarchyCurator):
     ...
 ```
 
@@ -52,9 +52,9 @@ to tag a file during the curation method and check for that tag elsewhere in the
 validate method. Below is an example of how one might accomplish that:
 
 ```python
-import curator
+from flywheel_gear_toolit.utils.curator import HierarchyCurator
 
-class Curator(curator.Curator):
+class Curator(HierarchyCurator):
 	...
 	def curate_file(self, file_):
 		"""Curates a file by setting the field 'file.info.curated' to True"""
