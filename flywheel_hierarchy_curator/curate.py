@@ -1,12 +1,11 @@
 import argparse
 import importlib
-from pathlib import Path
 import sys
+from pathlib import Path
 
 import flywheel
 from flywheel_gear_toolkit import GearToolkitContext
-
-from flywheel_gear_toolkit.utils import walker, datatypes
+from flywheel_gear_toolkit.utils import datatypes, walker
 
 
 def load_curator(curator_path: datatypes.PathLike):
@@ -72,8 +71,8 @@ def main(
 
     project_walker = walker.Walker(parent, depth_first=curator.depth_first)
 
-    for container in project_walker.walk():
-        curator.curate_container(container)
+    for container in project_walker.walk():  # pragma: no cover
+        curator.curate_container(container)  # Tested in gear toolkit
 
 
 if __name__ == "__main__":  # pragma: no cover
