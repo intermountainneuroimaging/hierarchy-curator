@@ -21,7 +21,7 @@ license = "MIT"
     pytest-cov = "^2.10.1"
     pytest-mock = "^3.3.1"
     coverage = {extras = ["toml"], version = "^5.3"}
-    flywheel-gear-toolkit = { git = "https://gitlab.com/flywheel-io/public/gear-toolkit.git", branch = "master"}
+    flywheel-gear-toolkit = { git = "https://gitlab.com/flywheel-io/public/gear-toolkit.git", branch = "curator-update"}
     black = "^20.8b1"
     isort = "^5.6.4"
 
