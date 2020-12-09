@@ -6,6 +6,7 @@ import logging
 
 import flywheel
 import pandas as pd
+from pathlib import Path
 from flywheel_gear_toolkit.utils.curator import HierarchyCuratorr
 
 log = logging.getLogger("my_curator")

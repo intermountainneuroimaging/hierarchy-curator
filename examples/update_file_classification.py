@@ -5,6 +5,7 @@ mapping and the classification based on the Dicom SeriesDescription data element
 
 import json
 import logging
+from pathlib import Path
 
 import flywheel
 from flywheel_gear_toolkit.utils.reporters import AggregatedReporter
@@ -45,28 +46,24 @@ class Curator(HierarchyCurator):
         pass
 
     def curate_file(self, file_: flywheel.FileEntry):
-        log.info("Curating file %s", file_.name)
         try:
             new_classification = self.classify_file(file_)
             if new_classification is None:
                 return
             else:
-                log.debug(
-                    "file %s classification updated to %s",
-                    file_.name,
-                    new_classification,
-                )
                 file_.update_classification(new_classification)
+                self.reporter.append_log(
+                    container_type='file',
+                    label=file_.name
+                    msg=f"file {file.name} classification updated to {new_classification}",
+                )
         except Exception as exc:
-            ref = file_._parent.ref()
-            kwargs = {f"{ref.type}_id": ref["id"]}
-            self.error_reporter.write_file_error(
-                err_list=[],
-                err_str=str(exc),
-                file_name=file_.name,
+            self.reporter.append_log(
+                container_type='file'
+                err=str(exc),
+                label=file_.name,
                 resolved="False",
                 search_key="",
-                **kwargs,
             )
 
     def classify_file(self, file_: flywheel.FileEntry):

@@ -6,6 +6,7 @@ mapping and the classification based on the Dicom SeriesDescription data element
 import json
 import logging
 import dataclasses
+from pathlib import Path
 
 import flywheel
 from flywheel_gear_toolkit.utils.reporters import AggregatedReporter, BaseLogRecord
@@ -40,7 +41,7 @@ class MapLogRecord(BaseLogRecord):
 
 
 class Curator(HierarchyCurator):
-    def __init__(self):
+    def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
         self.reporter = None
@@ -62,6 +63,14 @@ class Curator(HierarchyCurator):
             new_label = SESSION_LABEL_CORRECTION.get(session.label)
             if new_label:
                 session.update({"label": new_label})
+                self.reporter.append_log(
+                    msg=f'updated session label to {new_label}',
+                    subject_label=session.subject.id,
+                    subject_id=session.subject.id,
+                    session_label=session.label,
+                    session_id=session.id,
+                    resolved=True,
+                )
         except Exception as exc:
             self.reporter.append_log(
                 err=str(exc),
