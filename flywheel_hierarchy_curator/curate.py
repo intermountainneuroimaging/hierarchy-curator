@@ -70,9 +70,12 @@ def main(
     curator = get_curator(context, curator_path, **kwargs)
 
     project_walker = walker.Walker(parent, depth_first=curator.depth_first)
-
-    for container in project_walker.walk():  # pragma: no cover
-        curator.curate_container(container)  # Tested in gear toolkit
+    try:
+        for container in project_walker.walk():  # pragma: no cover
+            curator.curate_container(container)  # Tested in gear toolkit
+    except Exception:
+        log.err('Uncaught Exception',exc_info=True)
+        curator.__del__()
 
 
 if __name__ == "__main__":  # pragma: no cover
