@@ -7,24 +7,30 @@ import json
 import logging
 
 import flywheel
-from custom_curator.reporters import CuratorErrorReporter
-from flywheel_gear_toolkit import GearToolkitContext
-from flywheel_gear_toolkit.utils import curator
+from flywheel_gear_toolkit.utils.reporters import AggregatedReporter
+from flywheel_gear_toolkit.utils.curator import HierarchyCurator
 
 log = logging.getLogger("my_curator")
 log.setLevel("DEBUG")
 
 
-class Curator(curator.Curator):
-    def __init__(self):
-        super(Curator, self).__init__(depth_first=True)
-        self.error_reporter = None
+class Curator(HierarchyCurator):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.reporter = None
+        if self.write_report:
+            log.info('Initiating reporter')
+            self.reporter = AggregatedReporter(
+                output_path=(Path(self.context.output_dir) / 'out.csv')
+            )
 
     def curate_project(self, project: flywheel.Project):
-        gear_context = GearToolkitContext()
-        self.error_reporter = CuratorErrorReporter(
-            output_dir=gear_context.output_dir, project_label=project.label
+        self.reporter.append_log(
+            container_type='project',
+            label=project.label, 
+            msg=f'Curating files under project {project.label}'
         )
+
 
     def curate_subject(self, subject: flywheel.Subject):
         pass
