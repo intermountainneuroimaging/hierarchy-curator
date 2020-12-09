@@ -1,7 +1,10 @@
-from pathlib import Path
 import sys
+from pathlib import Path
+from unittest.mock import MagicMock
+
 import pytest
-from flywheel_hierarchy_curator.curate import main, get_curator, load_curator
+
+from flywheel_hierarchy_curator.curate import get_curator, load_curator, main
 
 ASSETS_DIR = Path(__file__).parent / "assets"
 
@@ -14,8 +17,9 @@ def test_get_curator():
     assert curator.extra_arg == "Test"
     assert str(type(curator)) == "<class 'dummy_curator.Curator'>"
 
-@pytest.mark.skip(reason='Import fw_project fixture from flywheel_Gear_toolkit')
-@pytest.mark.usefixtures('fw_project')
+
+@pytest.mark.skip(reason="Import fw_project fixture from flywheel_Gear_toolkit")
+@pytest.mark.usefixtures("fw_project")
 def test_curate_main_with_a_dummy_curator(fw_project):
     client = None
     project = fw_project(n_subjects=1)
@@ -48,3 +52,19 @@ def test_load_curator_returns_module():
     # Returns None if path is corrupted
     mod = load_curator(str(ASSETS_DIR / "doesnotexist.py"))
     assert mod is None
+
+
+def test_get_curator_sets_arbitrary_kwargs():
+    sys.modules.pop("dummy_curator", None)
+
+    curator = get_curator(
+        MagicMock(),
+        str(ASSETS_DIR / "dummy_curator.py"),
+        write_report=True,
+        test="test",
+        test2="test3",
+    )
+
+    assert curator.write_report == True
+    assert curator.test == "test"
+    assert curator.test2 == "test3"
