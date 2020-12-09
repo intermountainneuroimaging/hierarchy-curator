@@ -53,12 +53,6 @@ class Curator(HierarchyCurator):
                 format=MapLogRecord,  # Use custom log record
             )
 
-    def curate_project(self, project: flywheel.Project):
-        pass
-
-    def curate_subject(self, subject: flywheel.Subject):
-        pass
-
     def curate_session(self, session: flywheel.Session):
         log.info("Curating session %s", session.id)
         try:
@@ -82,12 +76,3 @@ class Curator(HierarchyCurator):
                 session_id=session.id,
                 resolved=False,
             )
-
-    def curate_acquisition(self, acquisition: flywheel.Acquisition):
-        pass
-
-    def curate_analysis(self, analysis):
-        pass
-
-    def curate_file(self, file_: flywheel.FileEntry):
-        pass
