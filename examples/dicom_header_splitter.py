@@ -1,21 +1,27 @@
 import json
 import logging
+import random
 import zipfile
 
 import flywheel
 import pydicom
-from custom_curator.reporters import CuratorErrorReporter
-from flywheel_gear_toolkit import GearToolkitContext
+from flywheel_gear_toolkit.utils.reporters import AggregatedReporter
 from flywheel_gear_toolkit.utils import curator
+from flywheel_gear_toolkit import GearToolkitContext
 
 log = logging.getLogger("dicom_tag_splitter")
 log.setLevel("DEBUG")
 
 
-class Curator(curator.Curator):
-    def __init__(self):
-        super(Curator, self).__init__(depth_first=True)
-        self.error_reporter = None
+class Curator(curator.HierarchyCurator):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.reporter = None
+        if self.write_report:
+            log.info('Initiating reporter')
+            self.reporter = AggregatedReporter(
+                output_path=(Path(self.context.output_dir) / 'out.csv')
+            )
 
     def curate_project(self, project: flywheel.Project):
         pass
@@ -27,28 +33,25 @@ class Curator(curator.Curator):
         pass
 
     def curate_acquisition(self, acquisition: flywheel.Acquisition):
-        self.context = GearToolkitContext()
-        if self.write_report:
-            self.error_reporter = CuratorErrorReporter(
-                output_dir=gear_context.output_dir, container_label=acquisition.label
-            )
+        self.reporter.append_log(
+            container_type='acquisition',
+            label=acquisition.label, msg=f'Curating {len(acquisition.files)} files'
+        )
 
     def curate_analysis(self, analysis):
         pass
 
     def curate_file(self, file_: flywheel.FileEntry):
-        # Only operate on input file
-        if self.input_file_one.hash == file_.hash:
-            log.info(f"Curating file {file_.name}")
-            if zipfile.is_zipfile(file_):
-                zip = zipfile.ZipFile(zip_file_path)
-                for n in range(len(zip.namelist())):
-                    dcm_path = zip.extract(zip.namelist()[n], "/tmp")
-                    if os.path.isfile(dcm_path):
-                        try:
-                            dcm = pydicom.dcmread(dcm_path)
-                            log.info(f"Weight: {dcm.PatientWeight}")
-                        except:
-                            pass
-                log.info("Done")
-            log.warning("Not a zip")
+        log.info(f"Curating file {file_.name}")
+        if zipfile.is_zipfile(file_):
+            zip = zipfile.ZipFile(zip_file_path)
+            for n in range(len(zip.namelist())):
+                dcm_path = zip.extract(zip.namelist()[n], "/tmp")
+                if os.path.isfile(dcm_path):
+                    try:
+                        dcm = pydicom.dcmread(dcm_path)
+                        # Randomly adjust patient weight for deidentify
+                        setattr(dcm,'PatientWeight', dcm.get('PatientWeight')+ random.randint(-10,10))
+                    except:
+                        pass
+        log.warning("Not a zip")
