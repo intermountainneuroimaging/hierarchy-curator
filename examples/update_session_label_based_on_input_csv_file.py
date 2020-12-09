@@ -4,12 +4,11 @@ columns: session.id, label.
 """
 import logging
 
-import pandas as pd
 import flywheel
+import pandas as pd
+from custom_curator.reporters import CuratorErrorReporter
 from flywheel_gear_toolkit import GearToolkitContext
 from flywheel_gear_toolkit.utils import curator
-
-from custom_curator.reporters import CuratorErrorReporter
 
 log = logging.getLogger("my_curator")
 log.setLevel("DEBUG")
