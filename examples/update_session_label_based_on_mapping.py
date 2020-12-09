@@ -5,11 +5,11 @@ mapping and the classification based on the Dicom SeriesDescription data element
 
 import json
 import logging
+import dataclasses
 
 import flywheel
-from custom_curator.reporters import CuratorErrorReporter
-from flywheel_gear_toolkit import GearToolkitContext
-from flywheel_gear_toolkit.utils import curator
+from flywheel_gear_toolkit.utils.reporters import AggregatedReporter, BaseLogRecord
+from flywheel_gear_toolkit.utils.curator import HierarchyCurator
 
 log = logging.getLogger("my_curator")
 log.setLevel("DEBUG")
@@ -27,17 +27,31 @@ SESSION_LABEL_CORRECTION = {
     "REV1": "Relapse_Evaluation_1",
 }
 
+@dataclasses.dataclass
+class MapLogRecord(BaseLogRecord):
 
-class Curator(curator.Curator):
+    subject_label: str = ""
+    subject_id: str = ""
+    session_label: str = ""
+    session_id: str = ""
+    resolved: bool = False
+    err: str = ""
+    msg: str = ""
+
+
+class Curator(HierarchyCurator):
     def __init__(self):
-        super(Curator, self).__init__(depth_first=True)
-        self.error_reporter = None
+        super().__init__(**kwargs)
 
+        self.reporter = None
+        if self.write_report:
+            log.info('Initiating reporter')
+            self.reporter = AggregatedReporter(
+                output_path=(Path(self.context.output_dir) / 'out.csv'),
+                format=MapLogRecord # Use custom log record
+            )
     def curate_project(self, project: flywheel.Project):
-        gear_context = GearToolkitContext()
-        self.error_reporter = CuratorErrorReporter(
-            output_dir=gear_context.output_dir, project_label=project.label
-        )
+        pass
 
     def curate_subject(self, subject: flywheel.Subject):
         pass
@@ -49,13 +63,13 @@ class Curator(curator.Curator):
             if new_label:
                 session.update({"label": new_label})
         except Exception as exc:
-            self.error_reporter.write_session_error(
-                err_str=str(exc),
+            self.reporter.append_log(
+                err=str(exc),
                 subject_label=session.subject.id,
                 subject_id=session.subject.id,
                 session_label=session.label,
                 session_id=session.id,
-                resolved="False",
+                resolved=False,
             )
 
     def curate_acquisition(self, acquisition: flywheel.Acquisition):

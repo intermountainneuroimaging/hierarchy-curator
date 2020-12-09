@@ -6,28 +6,21 @@ import logging
 
 import flywheel
 import pandas as pd
-from custom_curator.reporters import CuratorErrorReporter
-from flywheel_gear_toolkit import GearToolkitContext
-from flywheel_gear_toolkit.utils import curator
+from flywheel_gear_toolkit.utils.curator import HierarchyCuratorr
 
 log = logging.getLogger("my_curator")
 log.setLevel("DEBUG")
 
 
-class Curator(curator.Curator):
+class Curator(HierarchyCurator):
     def __init__(self):
-        super(Curator, self).__init__(depth_first=True)
-        self.error_reporter = None
+        super().__init__(**kwargs)
 
     def curate_project(self, project: flywheel.Project):
-        gear_context = GearToolkitContext()
-        self.error_reporter = CuratorErrorReporter(
-            output_dir=gear_context.output_dir, project_label=project.label
-        )
         if self.input_file_one:
             df = pd.read_csv(self.input_file_one)
             for i, r in df.iterrows():
-                session = gear_context.client.get_session(r["session.id"])
+                session = self.context.client.get_session(r["session.id"])
                 session.update(label=r["label"])
         else:
             raise ValueError("no csv file found")
