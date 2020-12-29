@@ -6,53 +6,7 @@ import sys
 import flywheel
 from flywheel_gear_toolkit import GearToolkitContext
 
-from flywheel_gear_toolkit.utils import walker, datatypes
-
-
-def load_curator(curator_path: datatypes.PathLike):
-    """Load curator from the file, return the module.
-
-    Args:
-        curator_path (Path-like): Path to curator script.
-
-    Returns:
-        (module): A python module.
-    """
-    if isinstance(curator_path, str):
-        curator_path = Path(curator_path).resolve()
-    if curator_path.is_file():
-        old_syspath = sys.path[:]
-        try:
-            sys.path.append(str(curator_path.parent))
-            ## Investigate import statement
-            mod = importlib.import_module(curator_path.name.split(".")[0])
-            mod.filename = str(curator_path)
-        finally:
-            sys.path = old_syspath
-    else:
-        mod = None
-
-    return mod
-
-
-def get_curator(
-    context: GearToolkitContext,
-    curator_path: datatypes.PathLike,
-    write_report: bool = False,
-    **kwargs
-):
-    """Returns an instantiated curator
-
-    Args:
-        client (flywheel.Client): The flywheel sdk client.
-        curator_path (Path-like): A path to a curator module.
-        **kwargs: Extra keyword arguments.
-    """
-    curator_mod = load_curator(curator_path)
-    curator = curator_mod.Curator(context=context, write_report=write_report, **kwargs)
-
-    return curator
-
+from flywheel_gear_toolkit.utils import walker, datatypes, get_curator
 
 def main(
     context: GearToolkitContext,
