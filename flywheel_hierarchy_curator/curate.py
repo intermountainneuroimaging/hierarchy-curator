@@ -1,12 +1,11 @@
+"""Hierarchy curator main interface."""
 import argparse
-import importlib
-from pathlib import Path
-import sys
 
 import flywheel
 from flywheel_gear_toolkit import GearToolkitContext
+from flywheel_gear_toolkit.utils import datatypes, walker
+from flywheel_gear_toolkit.utils.curator import get_curator
 
-from flywheel_gear_toolkit.utils import walker, datatypes, get_curator
 
 def main(
     context: GearToolkitContext,
@@ -31,16 +30,20 @@ def main(
 
 
 if __name__ == "__main__":  # pragma: no cover
-    parser = argparse.ArgumentParser(description="Argument parser for curation")
+    parser = argparse.ArgumentParser(
+        description="Argument parser for curation"
+    )
     parser.add_argument(
-        "--api-key", default=None, help="Pass in api key if not logged in with cli"
+        "--api-key",
+        default=None,
+        help="Pass in api key if not logged in with cli",
     )
     parser.add_argument(
         "--curator", "-c", required=True, help="path to curator implementation"
     )
-    parser.add_argument("--input-file-one", help="Input file one")
-    parser.add_argument("--input-file-two", help="Input file two")
-    parser.add_argument("--input-file-three", help="Input file three")
+    parser.add_argument("--additional-input-one", help="Input file one")
+    parser.add_argument("--additional-input-two", help="Input file two")
+    parser.add_argument("--additional-input-three", help="Input file three")
     parser.add_argument("path", help="The resolver path to the project")
 
     args = parser.parse_args()
@@ -50,7 +53,7 @@ if __name__ == "__main__":  # pragma: no cover
         client,
         project,
         args.curator,
-        input_file_one=args.input_file_one,
-        input_file_two=args.input_file_two,
-        input_file_three=args.input_file_three,
+        additional_input_one=args.input_file_one,
+        additional_input_two=args.input_file_two,
+        additional_input_three=args.input_file_three,
     )

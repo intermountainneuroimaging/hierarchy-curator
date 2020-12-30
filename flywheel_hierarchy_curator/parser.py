@@ -1,8 +1,8 @@
-"""Flywheel gear context parser"""
+"""Flywheel gear context parser."""
 
 
 def parse_config(gear_context):
-    """Parse gear config
+    """Parse gear config.
 
     Args:
         gear_context (flywheel_gear_toolkit.GearToolkitContext): context
@@ -21,15 +21,13 @@ def parse_config(gear_context):
     parent = get_parent_fn(analysis.parent.id)
 
     curator_path = gear_context.get_input_path("curator")
-    optional_requirements = None
-    optional_requirements = gear_context.get_input_path("optional-requirements")
 
     input_file_one = gear_context.get_input_path("additional-input-one")
     input_file_two = gear_context.get_input_path("additional-input-two")
     input_file_three = gear_context.get_input_path("additional-input-three")
     input_files = {
-        "input_file_one": input_file_one,
-        "input_file_two": input_file_two,
-        "input_file_three": input_file_three,
+        "additional_input_one": input_file_one,
+        "additional_input_two": input_file_two,
+        "additional_input_three": input_file_three,
     }
-    return parent, curator_path, input_files, optional_requirements
+    return parent, curator_path, input_files
