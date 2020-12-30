@@ -1,10 +1,13 @@
 """Hierarchy curator main interface."""
 import argparse
+import logging
 
 import flywheel
 from flywheel_gear_toolkit import GearToolkitContext
 from flywheel_gear_toolkit.utils import datatypes, walker
 from flywheel_gear_toolkit.utils.curator import get_curator
+
+log = logging.getLogger(__name__)
 
 
 def main(
@@ -27,7 +30,7 @@ def main(
     try:
         for container in project_walker.walk():  # pragma: no cover
             curator.curate_container(container)  # Tested in gear toolkit
-    except Exception:
+    except Exception:  # pylint: disable=broad-except
         log.error("Uncaught Exception", exc_info=True)
         curator.__del__()
 
