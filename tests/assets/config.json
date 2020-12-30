@@ -1,5 +1,8 @@
 {
-    "config": {},
+    "config": {
+        "write_report": true,
+        "verbose": true
+    },
     "inputs": {
         "curator": {
             "base": "file",
@@ -10,7 +13,8 @@
             "object": {
                 "size": 1583
             }
-        }
+        },
+        "api_key": {}
     },
     "destination": {}
 }
