@@ -7,14 +7,13 @@ import flywheel
 from flywheel_gear_toolkit import GearToolkitContext
 from flywheel_gear_toolkit.utils import curator
 
-from custom_curator.reporters import CuratorErrorReporter
 
 
 log = logging.getLogger("dicom_tag_splitter")
 log.setLevel("DEBUG")
 
 
-class Curator(curator.Curator):
+class Curator(curator.HierarchyCurator):
     def __init__(self):
         super(Curator, self).__init__(depth_first=True)
         self.error_reporter = None
@@ -30,10 +29,6 @@ class Curator(curator.Curator):
 
     def curate_acquisition(self, acquisition: flywheel.Acquisition):
         self.context = GearToolkitContext()
-        if self.write_report:
-            self.error_reporter = CuratorErrorReporter(
-                output_dir=gear_context.output_dir, container_label=acquisition.label
-            )
 
     def curate_analysis(self, analysis):
         pass
