@@ -550,7 +550,7 @@ python-versions = "*"
 
 [metadata]
 lock-version = "1.1"
-    python-versions = "^3.8"
+        python-versions = "^3.8"
 content-hash = "41e149d2ccac6e0c9d9af51d6b1a8cc55d281fef60772100b91a2bb263fa5d5c"
 
 [metadata.files]

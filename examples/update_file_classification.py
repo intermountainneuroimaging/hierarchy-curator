@@ -5,27 +5,31 @@ mapping and the classification based on the Dicom SeriesDescription data element
 
 import json
 import logging
+from pathlib import Path
 
 import flywheel
-from flywheel_gear_toolkit import GearToolkitContext
-from flywheel_gear_toolkit.utils import curator
-
-from custom_curator.reporters import CuratorErrorReporter
-
+from flywheel_gear_toolkit.utils.curator import HierarchyCurator
+from flywheel_gear_toolkit.utils.reporters import AggregatedReporter
 
 log = logging.getLogger("my_curator")
 log.setLevel("DEBUG")
 
 
-class Curator(curator.Curator):
-    def __init__(self):
-        super(Curator, self).__init__(depth_first=True)
-        self.error_reporter = None
+class Curator(HierarchyCurator):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.reporter = None
+        if self.write_report:
+            log.info("Initiating reporter")
+            self.reporter = AggregatedReporter(
+                output_path=(Path(self.context.output_dir) / "out.csv")
+            )
 
     def curate_project(self, project: flywheel.Project):
-        gear_context = GearToolkitContext()
-        self.error_reporter = CuratorErrorReporter(
-            output_dir=gear_context.output_dir, project_label=project.label
+        self.reporter.append_log(
+            container_type="project",
+            label=project.label,
+            msg=f"Curating files under project {project.label}",
         )
 
     def curate_subject(self, subject: flywheel.Subject):
@@ -41,28 +45,24 @@ class Curator(curator.Curator):
         pass
 
     def curate_file(self, file_: flywheel.FileEntry):
-        log.info("Curating file %s", file_.name)
         try:
             new_classification = self.classify_file(file_)
             if new_classification is None:
                 return
             else:
-                log.debug(
-                    "file %s classification updated to %s",
-                    file_.name,
-                    new_classification,
-                )
                 file_.update_classification(new_classification)
+                self.reporter.append_log(
+                    container_type="file",
+                    label=file_.name,
+                    msg=f"file {file.name} classification updated to {new_classification}",
+                )
         except Exception as exc:
-            ref = file_._parent.ref()
-            kwargs = {f"{ref.type}_id": ref["id"]}
-            self.error_reporter.write_file_error(
-                err_list=[],
-                err_str=str(exc),
-                file_name=file_.name,
+            self.reporter.append_log(
+                container_type="file",
+                err=str(exc),
+                label=file_.name,
                 resolved="False",
                 search_key="",
-                **kwargs,
             )
 
     def classify_file(self, file_: flywheel.FileEntry):
