@@ -1,4 +1,5 @@
 from pathlib import Path
+import sys
 
 from flywheel_hierarchy_curator.curate import main, get_curator, load_curator
 
