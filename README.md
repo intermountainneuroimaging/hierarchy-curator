@@ -12,17 +12,16 @@ acquisition, analysis and file containers.
 * **curator**: Python script (e.g. curator.py) that implemented the `HierarchyCurator` class. 
 More details at the [Flywheel Gear Toolkit docs](https://gear-toolkit.readthedocs.io/en/latest/utils.html#curator).
 ### Optional
-* **optional_requirements**: Optional requirements.txt dependencies to be installed at runtime.
-* **input_file_one**: Additional file to be used by the curator. 
-* **input_file_two**: Additional file to be used by the curator.
-* **input_file_three**: Additional file to be used by the curator.
+* **additional_input_one**: Additional file to be used by the curator. 
+* **additional_input_two**: Additional file to be used by the curator.
+* **additional_input_three**: Additional file to be used by the curator.
 
 ## HierarchyCurator
 The curator class must be defined in a python script which is provided to the gear
 as an input. This class must be named `Curator` and must inherit from `flywheel_gear_toolkit.utils.curators.HierarchyCurator`
 class:
 ```python
-from flywheel_gear_toolit.utils.curator import HierarchyCurator
+from flywheel_gear_toolkit.utils.curator import HierarchyCurator
 
 class Curator(HierarchyCurator):
     ...
@@ -52,7 +51,7 @@ to tag a file during the curation method and check for that tag elsewhere in the
 validate method. Below is an example of how one might accomplish that:
 
 ```python
-from flywheel_gear_toolit.utils.curator import HierarchyCurator
+from flywheel_gear_toolkit.utils.curator import HierarchyCurator
 
 class Curator(HierarchyCurator):
 	...
@@ -78,14 +77,14 @@ where the input files do not exist.
 2. The gear  allows for the use of up to three input files.
 
 The input files can be accessed within the curator class. The path to the input files 
-are stored within the attribute named `input_file_one`, `input_file_two` and 
-`input_file_three`.
+are stored within the attribute named `additional_input_one`, `input_file_two` and 
+`additional_input_three`.
 
 Below is an example of a Project curation method using the first input file:
 ```python
 def curate_project(self, project):
-	if self.input_file_one:
-		with open(self.input_file_one, 'r') as input_file:
-			for line in input_file:
-				project.add_note(line)
+    if self.input_file_one:
+        with open(self.additional_input_one, 'r') as input_file:
+            for line in input_file:
+                project.add_note(line)
 ```

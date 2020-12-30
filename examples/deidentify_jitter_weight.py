@@ -20,11 +20,10 @@ class Curator(curator.HierarchyCurator):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.reporter = None
-        if self.write_report:
-            log.info("Initiating reporter")
-            self.reporter = AggregatedReporter(
-                output_path=(Path(self.context.output_dir) / "out.csv")
-            )
+        log.info("Initiating reporter")
+        self.reporter = AggregatedReporter(
+            output_path=(Path(self.context.output_dir) / "out.csv")
+        )
         self.temp_dir = Path(tempfile.mkdtemp())
 
     def curate_project(self, project: flywheel.Project):
@@ -55,11 +54,12 @@ class Curator(curator.HierarchyCurator):
             f_read_path = self.temp_dir / f"old_{file_.name}"
             f_write_path = self.temp_dir / file_.name
 
-            f_read_extract_path = self.temp_dir / f"old_{file_.name.split('.zip')[0]}"
+            f_read_extract_path = (
+                self.temp_dir / f"old_{file_.name.split('.zip')[0]}"
+            )
             f_write_extract_path = self.temp_dir / file_.name.split(".zip")[0]
 
             file_.download(str(f_read_path))
-            # try:
             zip_read = zipfile.ZipFile(str(f_read_path))
             zip_write = zipfile.ZipFile(str(f_write_path), "w")
 
@@ -71,33 +71,27 @@ class Curator(curator.HierarchyCurator):
                     try:
                         dcm = pydicom.dcmread(dcm_path)
                         # Randomly adjust patient weight for deidentify (Adding "jitter")
-                        setattr(
-                            dcm,
-                            "StudyDescription",
-                            f"My deescr {random.randint(-10,10)}",
+                        if dcm.PatientWeight:
+                            setattr(
+                                dcm,
+                                "PatientWeight",
+                                (dcm.PatientWeight + random.randint(-10, 10)),
+                            )
+                        new_path = f_write_extract_path / os.path.basename(
+                            dcm_path
                         )
-                        new_path = f_write_extract_path / os.path.basename(dcm_path)
                         dcm.save_as(new_path)
                         zip_write.write(new_path)
                     except Exception as e:
-                        if self.reporter:
-                            self.reporter.append_log(
-                                err=str(e),
-                                container_type="file",
-                                label=file_.name,
-                                search_key="",
-                                resolved=False,
-                                container_id=file_.id,
-                                msg="",
-                            )
-                        else:
-                            log.error(e)
+                        self.reporter.append_log(
+                            err=str(e),
+                            container_type="file",
+                            label=file_.name,
+                            search_key="",
+                            resolved=False,
+                            container_id=file_.id,
+                            msg="",
+                        )
             zip_read.close()
             zip_write.close()
             file_.parent.upload_file(f_write_path)
-            # except:
-            #    self.reporter.append_log(
-            #        err="Cannot open zipfile",
-            #        container_type='file',
-            #        label=file_.name
-            #    )
