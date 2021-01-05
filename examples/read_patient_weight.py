@@ -1,13 +1,11 @@
 import json
 import logging
 import zipfile
-import pydicom
 
 import flywheel
+import pydicom
 from flywheel_gear_toolkit import GearToolkitContext
 from flywheel_gear_toolkit.utils import curator
-
-
 
 log = logging.getLogger("dicom_tag_splitter")
 log.setLevel("DEBUG")

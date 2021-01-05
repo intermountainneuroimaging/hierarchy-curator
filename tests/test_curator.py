@@ -1,10 +1,10 @@
 import sys
 from pathlib import Path
-import sys
 
 from flywheel_hierarchy_curator.curate import main
 
 ASSETS_DIR = Path(__file__).parent / "assets"
+
 
 def test_curate_main_with_a_dummy_curator(fw_project):
     client = None

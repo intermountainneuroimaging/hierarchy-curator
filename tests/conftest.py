@@ -3,6 +3,7 @@ from pathlib import Path
 import flywheel
 import pytest
 
+
 class MockFinder:
     def __init__(self, arr):
         self.arr = arr
@@ -21,7 +22,9 @@ class MockFinder:
 class MockContainerMixin:
     analyses = []
     files = []
-    _update = None  # to store updates made to the container when calling `update`
+    _update = (
+        None  # to store updates made to the container when calling `update`
+    )
 
     def reload(self):
         if self._update:
@@ -55,7 +58,9 @@ class MockProject(MockContainerMixin, flywheel.Project):
 def fw_project():
     """Mock a flywheel project"""
 
-    def get_fw_project(n_subjects=5, n_sessions=1, n_acquisitions=1, n_files=1):
+    def get_fw_project(
+        n_subjects=5, n_sessions=1, n_acquisitions=1, n_files=1
+    ):
         project = MockProject(label="Mock", info={"study_id": "test"})
         subjects = []
         for i in range(n_subjects):

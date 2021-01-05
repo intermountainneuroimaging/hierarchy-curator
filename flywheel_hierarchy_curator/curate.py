@@ -28,7 +28,7 @@ def main(
 
     project_walker = walker.Walker(parent, depth_first=curator.depth_first)
     try:  # pragma: no cover
-        for container in project_walker.walk():  
+        for container in project_walker.walk():
             curator.curate_container(container)  # Tested in gear toolkit
     except Exception:  # pylint: disable=broad-except pragma: no cover
         log.error("Uncaught Exception", exc_info=True)

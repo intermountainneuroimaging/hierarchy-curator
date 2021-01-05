@@ -20,5 +20,8 @@ if __name__ == "__main__":  # pragma: no cover
             (parent.label or parent.code),
         )
         curate.main(
-            gear_context, parent, curator_path, **input_files,
+            gear_context,
+            parent,
+            curator_path,
+            **input_files,
         )
