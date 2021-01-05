@@ -2,6 +2,7 @@ from pathlib import Path
 from unittest.mock import MagicMock
 
 import flywheel
+import pytest
 from flywheel_gear_toolkit import GearToolkitContext
 
 from flywheel_hierarchy_curator import curate, parser
@@ -12,6 +13,7 @@ CURATOR = (Path(".") / "examples/test_file_basic.py").resolve()
 
 # Note: only for local testing, set the above variables to be a
 # project you have access to
+@pytest.mark.skip()
 def test_integration(mocker):
     fw = flywheel.Client()
     gear_context = MagicMock(spec=GearToolkitContext)

@@ -7,7 +7,7 @@ from pathlib import Path
 
 import flywheel
 import pandas as pd
-from flywheel_gear_toolkit.utils.curator import HierarchyCuratorr
+from flywheel_gear_toolkit.utils.curator import HierarchyCurator
 
 log = logging.getLogger("my_curator")
 log.setLevel("DEBUG")
