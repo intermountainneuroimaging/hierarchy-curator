@@ -3,14 +3,18 @@ An example curation script to correct the session.label based on a predefined
 mapping and the classification based on the Dicom SeriesDescription data element.
 """
 
+import dataclasses
 import json
 import logging
-import dataclasses
 from pathlib import Path
 
 import flywheel
 from flywheel_gear_toolkit.utils.curator import HierarchyCurator
-from flywheel_gear_toolkit.utils.reporters import AggregatedReporter, BaseLogRecord
+from flywheel_gear_toolkit.utils.reporters import (
+    AggregatedReporter,
+    BaseLogRecord,
+)
+
 
 @dataclasses.dataclass
 class Log(BaseLogRecord):
@@ -30,13 +34,12 @@ class Curator(HierarchyCurator):
         super().__init__(**kwargs)
         log.info("Initiating reporter")
         self.reporter = AggregatedReporter(
-            output_path=(Path(self.context.output_dir) / "out.csv"),
-            format=Log
+            output_path=(Path(self.context.output_dir) / "out.csv"), format=Log
         )
 
     def curate_project(self, project: flywheel.Project):
-        log.info('Curating project %s', project.label)
-        files = ' '.join([file.name for file in project.files])
+        log.info("Curating project %s", project.label)
+        files = " ".join([file.name for file in project.files])
         self.reporter.append_log(
             container_type="project",
             container_id=project.id,
@@ -46,8 +49,8 @@ class Curator(HierarchyCurator):
         )
 
     def curate_subject(self, subject: flywheel.Subject):
-        log.info('Curating subject %s', subject.label)
-        files = ' '.join([file.name for file in subject.files])
+        log.info("Curating subject %s", subject.label)
+        files = " ".join([file.name for file in subject.files])
         self.reporter.append_log(
             container_type="subject",
             container_id=subject.id,
@@ -57,8 +60,8 @@ class Curator(HierarchyCurator):
         )
 
     def curate_session(self, session: flywheel.Session):
-        log.info('Curating session %s', session.label)
-        files = ' '.join([file.name for file in session.files])
+        log.info("Curating session %s", session.label)
+        files = " ".join([file.name for file in session.files])
         self.reporter.append_log(
             container_type="session",
             container_id=session.id,
@@ -68,8 +71,8 @@ class Curator(HierarchyCurator):
         )
 
     def curate_acquisition(self, acquisition: flywheel.Acquisition):
-        log.info('Curating acquisition %s', acquisition.label)
-        files = ' '.join([file.name for file in acquisition.files])
+        log.info("Curating acquisition %s", acquisition.label)
+        files = " ".join([file.name for file in acquisition.files])
         self.reporter.append_log(
             container_type="acquisition",
             container_id=acquisition.id,
