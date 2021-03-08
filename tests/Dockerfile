@@ -4,9 +4,15 @@ FROM ${BASE}
 
 ENV FLYWHEEL="/flywheel/v0"
 
-# Install dev dependencies
-RUN poetry install
+COPY tests ${FLYWHEEL}/tests
+COPY .pre-commit-config.yaml .env ${FLYWHEEL}/
+# .git to make repo git available to pre-commit hooks
+COPY .git ${FLYWHEEL}/.git
 
-COPY tests ./tests
+# Installing pre-commit
+RUN pip install pre-commit
+
+# Need to install poetry with dev dependencies
+RUN poetry install
 
 ENTRYPOINT [""]
