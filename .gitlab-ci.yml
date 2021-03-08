@@ -1,7 +1,7 @@
 include:
   - project: flywheel-io/flywheel-apps/utils/ci-templates
     ref: master
-    file: poetry.yml
+    file: poetry-pre-commit.yml
 
 variables:
   PACKAGE_DIR: flywheel_hierarchy_curator/
