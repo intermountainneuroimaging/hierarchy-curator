@@ -10,10 +10,7 @@ from pathlib import Path
 
 import flywheel
 from flywheel_gear_toolkit.utils.curator import HierarchyCurator
-from flywheel_gear_toolkit.utils.reporters import (
-    AggregatedReporter,
-    BaseLogRecord,
-)
+from flywheel_gear_toolkit.utils.reporters import AggregatedReporter, BaseLogRecord
 
 
 @dataclasses.dataclass

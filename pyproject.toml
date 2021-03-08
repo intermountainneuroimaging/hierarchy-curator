@@ -39,7 +39,6 @@ license = "MIT"
     ]
 
 [tool.black]
-    line-length = 79
     exclude = '''
       /(
           \.eggs         # exclude a few common directories in the
@@ -51,15 +50,6 @@ license = "MIT"
         | \.cache
       )/
     '''
-
-[tool.isort]
-    multi_line_output = 3
-    include_trailing_comma = true
-    force_grid_wrap = 0
-    use_parentheses = true
-    ensure_newline_before_comments = true
-    line_length = 79
-
 
 [build-system]
     requires = ["poetry-core>=1.0.0"]

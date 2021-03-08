@@ -54,9 +54,7 @@ class Curator(curator.HierarchyCurator):
             f_read_path = self.temp_dir / f"old_{file_.name}"
             f_write_path = self.temp_dir / file_.name
 
-            f_read_extract_path = (
-                self.temp_dir / f"old_{file_.name.split('.zip')[0]}"
-            )
+            f_read_extract_path = self.temp_dir / f"old_{file_.name.split('.zip')[0]}"
             f_write_extract_path = self.temp_dir / file_.name.split(".zip")[0]
 
             file_.download(str(f_read_path))
@@ -77,9 +75,7 @@ class Curator(curator.HierarchyCurator):
                                 "PatientWeight",
                                 (dcm.PatientWeight + random.randint(-10, 10)),
                             )
-                        new_path = f_write_extract_path / os.path.basename(
-                            dcm_path
-                        )
+                        new_path = f_write_extract_path / os.path.basename(dcm_path)
                         dcm.save_as(new_path)
                         zip_write.write(new_path)
                     except Exception as e:

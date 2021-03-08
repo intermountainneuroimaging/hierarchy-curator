@@ -36,9 +36,7 @@ def main(
 
 
 if __name__ == "__main__":  # pragma: no cover
-    parser = argparse.ArgumentParser(
-        description="Argument parser for curation"
-    )
+    parser = argparse.ArgumentParser(description="Argument parser for curation")
     parser.add_argument(
         "--api-key",
         default=None,
