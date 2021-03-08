@@ -1,17 +1,9 @@
+import sys
 from pathlib import Path
 
-from custom_curator.curate import main, get_curator
+from flywheel_hierarchy_curator.curate import main
 
 ASSETS_DIR = Path(__file__).parent / "assets"
-
-
-def test_get_curator(fw_project):
-    client = None
-    curator_path = ASSETS_DIR / "dummy_curator.py"
-    curator = get_curator(client, curator_path, extra_arg="Test")
-    assert curator.client == client
-    assert curator.extra_arg == "Test"
-    assert str(type(curator)) == "<class 'dummy_curator.Curator'>"
 
 
 def test_curate_main_with_a_dummy_curator(fw_project):

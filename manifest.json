@@ -1,12 +1,12 @@
 {
-  "name": "custom-curator",
-  "label": "Custom Curator",
-  "description": "Curates a project given a python Curator class. Using an implementation of the Curator Class (provided as an input file (e.g., curator.py)) this gear is able to curate an entire project, walking down the hierarchy through project, subject, session, acquisition, analysis, and file containers.",
-  "version": "0.1.0-dev",
+  "name": "hierarchy-curator",
+  "label": "Hierarchy Curator",
+  "description": "Curates a container in the flywheel hierarchy given a python HierarchyCurator class. Using an implementation of the HierarchyCurator Class (provided as an input file (e.g., curator.py)) this gear is able to curate an entire project, walking down the hierarchy through project, subject, session, acquisition, analysis, and file containers.",
+  "version": "1.0.0",
   "custom": {
     "gear-builder": {
       "category": "analysis",
-      "image": "flywheel/custom-curation:0.1.0-dev"
+      "image": "flywheel/hierarchy-curator:1.0.0"
     },
     "flywheel": {
       "suite": "Curation"
@@ -27,8 +27,8 @@
     },
     "additional-input-one": {
       "base": "file",
-      "description": "An optional input for curation.",
-      "optional": true
+      "optional": true,
+      "description": "An optional input for curation."
     },
     "additional-input-two": {
       "base": "file",
@@ -41,10 +41,15 @@
       "optional": true
     }
   },
-  "config": {},
-  "environment": {
+  "config": {
+    "debug": {
+      "description": "Log debug messages",
+      "type": "boolean",
+      "default": false
+    }
   },
-  "command": "./run.py",
+  "environment": {},
+  "command": "poetry run python run.py",
   "author": "Flywheel",
   "maintainer": "Flywheel <support@flywheel.io>",
   "cite": "",

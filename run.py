@@ -1,17 +1,27 @@
-#!/usr/bin/env python
+#!/usr/bin/python3
+"""Hierarchy Curator gear entrypoint."""
 import logging
 
 from flywheel_gear_toolkit import GearToolkitContext
 
-from custom_curator import curate
-from custom_curator.parser import parse_config
+from flywheel_hierarchy_curator import curate, parser
 
 log = logging.getLogger(__name__)
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     with GearToolkitContext() as gear_context:
         gear_context.init_logging()
-        project, curator_path, input_files = parse_config(gear_context)
-        log.info("Curating project %s", project.label)
-        curate.main(gear_context.client, project, curator_path, **input_files)
+        parent, curator_path, input_files = parser.parse_config(gear_context)
+
+        log.info(
+            "Curating %s %s",
+            parent.container_type,
+            (parent.label or parent.code),
+        )
+        curate.main(
+            gear_context,
+            parent,
+            curator_path,
+            **input_files,
+        )

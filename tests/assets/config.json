@@ -1,0 +1,20 @@
+{
+    "config": {
+        "write_report": true,
+        "verbose": true
+    },
+    "inputs": {
+        "curator": {
+            "base": "file",
+            "location": {
+                "name": "curator",
+                "path": "/flywheel/v0/input/curator/curator.py"
+            },
+            "object": {
+                "size": 1583
+            }
+        },
+        "api_key": {}
+    },
+    "destination": {}
+}

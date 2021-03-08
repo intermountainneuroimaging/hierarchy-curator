@@ -1,7 +1,7 @@
-from custom_curator import curator
+from flywheel_gear_toolkit.utils.curator import HierarchyCurator
 
 
-class Curator(curator.Curator):
+class Curator(HierarchyCurator):
     def curate_project(self, project):
         project.update(label="Curated")
 
