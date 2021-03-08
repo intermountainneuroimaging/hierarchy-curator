@@ -3,7 +3,6 @@ repos:
     rev: v3.4.0
     hooks:
     - id: check-json
-    - id: pretty-format-json
 
   - repo: https://gitlab.com/flywheel-io/flywheel-apps/utils/pre-commit-hooks
     rev: master
@@ -11,4 +10,5 @@ repos:
     - id: isort
     - id: black
     - id: pytest
+    - id: validate-manifest
 
