@@ -1,7 +1,7 @@
 import sys
 from pathlib import Path
 
-from flywheel_hierarchy_curator.curate import main
+from fw_gear_hierarchy_curator.curate import main
 
 ASSETS_DIR = Path(__file__).parent / "assets"
 

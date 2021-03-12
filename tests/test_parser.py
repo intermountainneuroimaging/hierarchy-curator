@@ -3,7 +3,7 @@ from unittest.mock import MagicMock
 import flywheel
 from flywheel_gear_toolkit import GearToolkitContext
 
-from flywheel_hierarchy_curator.parser import parse_config
+from fw_gear_hierarchy_curator.parser import parse_config
 
 
 def test_parse_config():
