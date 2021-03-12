@@ -18,8 +18,8 @@ class Curator(HierarchyCurator):
         super().__init__(**kwargs)
 
     def curate_project(self, project: flywheel.Project):
-        if self.input_file_one:
-            df = pd.read_csv(self.input_file_one)
+        if self.additional_input_one:
+            df = pd.read_csv(self.additional_input_one)
             for i, r in df.iterrows():
                 session = self.context.client.get_session(r["session.id"])
                 session.update(label=r["label"])

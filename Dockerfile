@@ -11,7 +11,7 @@ COPY pyproject.toml poetry.lock ./
 RUN poetry install --no-dev
 
 COPY run.py manifest.json $FLYWHEEL/
-COPY flywheel_hierarchy_curator $FLYWHEEL/flywheel_hierarchy_curator
+COPY fw_gear_hierarchy_curator $FLYWHEEL/fw_gear_hierarchy_curator
 
 # Configure entrypoint
 RUN chmod a+x $FLYWHEEL/run.py

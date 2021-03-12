@@ -57,7 +57,7 @@ if __name__ == "__main__":  # pragma: no cover
         client,
         project,
         args.curator,
-        additional_input_one=args.input_file_one,
-        additional_input_two=args.input_file_two,
-        additional_input_three=args.input_file_three,
+        additional_input_one=args.additional_input_one,
+        additional_input_two=args.additional_input_two,
+        additional_input_three=args.additional_input_three,
     )

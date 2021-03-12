@@ -33,7 +33,7 @@ class Curator(curator.HierarchyCurator):
 
     def curate_file(self, file_: flywheel.FileEntry):
         # Only operate on input file
-        if self.input_file_one.hash == file_.hash:
+        if self.additional_input_one.hash == file_.hash:
             log.info(f"Curating file {file_.name}")
             if zipfile.is_zipfile(file_):
                 zip = zipfile.ZipFile(zip_file_path)

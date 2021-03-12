@@ -5,7 +5,7 @@ import flywheel
 import pytest
 from flywheel_gear_toolkit import GearToolkitContext
 
-from flywheel_hierarchy_curator import curate, parser
+from fw_gear_hierarchy_curator import curate, parser
 
 GROUP = "scien"
 PROJECT = "Nate-BIDS-test"

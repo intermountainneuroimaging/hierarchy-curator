@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "flywheel-hierarchy-curator"
+name = "fw-gear-hierarchy-curator"
 version = "1.0.0"
 description = "Custom hierarchy curation gear"
 authors = ["Flywheel <support@flywheel.io>"]

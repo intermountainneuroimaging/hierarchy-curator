@@ -4,7 +4,7 @@ import logging
 
 from flywheel_gear_toolkit import GearToolkitContext
 
-from flywheel_hierarchy_curator import curate, parser
+from fw_gear_hierarchy_curator import curate, parser
 
 log = logging.getLogger(__name__)
 
