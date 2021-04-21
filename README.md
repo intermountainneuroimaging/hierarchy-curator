@@ -88,3 +88,29 @@ def curate_project(self, project):
             for line in input_file:
                 project.add_note(line)
 ```
+
+### Adding extra dependencies
+The file-curator gear comes with the following python packages installed:
+* lxml
+* pandas
+* nibabel
+* Pillow
+* piexif
+* pydicom
+* pypng
+* flywheel-gear-toolkit
+* fw-file
+
+__Note__: See package versions in [./pyproject.toml](pyproject.toml)
+
+If you need other dependencies that aren't installed by default, the gear-toolkit provides 
+an interface to programmatically install dependencies.  You can specify a `requirements.txt` 
+file as one of the additional inputs then install them with your `Curator.__init__` method:
+```python
+from flywheel_gear_toolkit.utils import install_requirements
+...
+class Curator(HierarchyCurator):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        install_requirements(self.additional_input_one)
+```
