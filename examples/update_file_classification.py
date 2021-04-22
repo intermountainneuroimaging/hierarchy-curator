@@ -19,11 +19,11 @@ class Curator(HierarchyCurator):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.reporter = None
-        if self.write_report:
-            log.info("Initiating reporter")
-            self.reporter = AggregatedReporter(
-                output_path=(Path(self.context.output_dir) / "out.csv")
-            )
+        
+        log.info("Initiating reporter")
+        self.reporter = AggregatedReporter(
+            output_path=(Path(self.context.output_dir) / "out.csv")
+        )
 
     def curate_project(self, project: flywheel.Project):
         self.reporter.append_log(
