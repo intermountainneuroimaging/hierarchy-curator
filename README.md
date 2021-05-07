@@ -16,7 +16,7 @@ For each container encountered when walking the hierarchy, the curator will call
 
 If `validate_<container>` returns True, then `curate_<container>` is called.  In `curate_<container>`, you have access to the SDK model of that container and the class instance.  
 
-You can save information from any level into the class insance itself, and then access that lower down.  For example if you wanted to set file level information based on subject metadata, you could write a curator like the following:
+You can save information from any level into the class instance itself, and then access that lower down.  For example if you wanted to set file level information based on subject metadata, you could write a curator like the following:
 
 ```python
 from flywheel_gear_toolkit.utils.curator import HierarchyCurator
