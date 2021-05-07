@@ -12,7 +12,7 @@ The Hierarchy curator walks _down_ the hierarchy breadth-first by default.  The 
 
 For example if the hierarchy curator is run from Subject level, the first container encountered when walking the hierarchy would be the Subject in which it was run, then it would walk to each session, then it would walk to each acquisition under those sessions, and finally each file under those acquisitions.
 
-For each container encountered when walking the hierarchy, the curator will call `validate_<container>` to decide whether it should curate that container.  The `validate_<container>` by default returns True, but can be overrided with custom logic.
+For each container encountered when walking the hierarchy, the curator will call `validate_<container>` to decide whether it should curate that container.  The `validate_<container>` by default returns True, but can be overriden with custom logic.
 
 If `validate_<container>` returns True, then `curate_<container>` is called.  In `curate_<container>`, you have access to the SDK model of that container and the class instance.  
 

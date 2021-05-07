@@ -6,8 +6,11 @@ from fw_file.dicom import DICOMCollection
 
 class Curator(HierarchyCurator):
     def __init__(self, **kwargs):
-        super().__init__(**kwargs, extra_packages=["tqdm==x.y.z"])
-        self.depth_first = False  # Curate depth first
+        super().__init__(**kwargs, extra_packages=["tqdm==4.59.0"])
+        # Curate depth first
+        #   Important to curate depth first so that all files in curate_file
+        #   Are guaranteed to be under the current self.sub_label
+        self.depth_first = True
 
     def curate_subject(self, subject):
         self.sub_label = subject.label
