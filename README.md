@@ -111,6 +111,5 @@ from flywheel_gear_toolkit.utils import install_requirements
 ...
 class Curator(HierarchyCurator):
     def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        install_requirements(self.additional_input_one)
+        super().__init__(**kwargs, extra_packages=["tqdm==x.y.z"])
 ```

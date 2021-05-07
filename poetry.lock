@@ -143,7 +143,7 @@ jsonschema = ">=2.6.0"
 
 [[package]]
 name = "flywheel-gear-toolkit"
-version = "0.1.3"
+version = "0.2.1"
 description = "Tooling for developing Flywheel gears"
 category = "main"
 optional = false
@@ -153,7 +153,9 @@ python-versions = ">=3.7,<4.0"
 dotty-dict = ">=1.2.1,<2.0.0"
 flywheel-bids = ">=0.9.1,<0.10.0"
 flywheel-gears = ">=0.2.0,<0.3.0"
-flywheel-sdk = ">=14.2.0,<15.0.0"
+flywheel-sdk = ">=14.2.0"
+jsonschema = ">=3.2.0,<4.0.0"
+pydantic = ">=1.8.1,<2.0.0"
 
 [[package]]
 name = "flywheel-gears"
@@ -193,7 +195,7 @@ python-versions = ">=2.6, !=3.0.*, !=3.1.*, !=3.2.*"
 
 [[package]]
 name = "fw-file"
-version = "0.4.4"
+version = "0.5.0"
 description = "Unified data-file interface"
 category = "main"
 optional = false
@@ -593,7 +595,7 @@ coverage = ">=4.4"
 pytest = ">=4.6"
 
 [package.extras]
-testing = ["fields", "hunter", "process-tests (==2.0.2)", "six", "pytest-xdist", "virtualenv"]
+testing = ["fields", "hunter", "process-tests (2.0.2)", "six", "pytest-xdist", "virtualenv"]
 
 [[package]]
 name = "pytest-mock"
@@ -652,7 +654,7 @@ urllib3 = ">=1.21.1,<1.27"
 
 [package.extras]
 security = ["pyOpenSSL (>=0.14)", "cryptography (>=1.3.4)"]
-socks = ["PySocks (>=1.5.6,!=1.5.7)", "win-inet-pton"]
+socks = ["PySocks (>=1.5.6,<1.5.7 || >1.5.7)", "win-inet-pton"]
 
 [[package]]
 name = "requests-toolbelt"
@@ -746,7 +748,7 @@ python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, <4"
 [package.extras]
 brotli = ["brotlipy (>=0.6.0)"]
 secure = ["pyOpenSSL (>=0.14)", "cryptography (>=1.3.4)", "idna (>=2.0.0)", "certifi", "ipaddress"]
-socks = ["PySocks (>=1.5.6,!=1.5.7,<2.0)"]
+socks = ["PySocks (>=1.5.6,<1.5.7 || >1.5.7,<2.0)"]
 
 [[package]]
 name = "wrapt"
@@ -759,7 +761,7 @@ python-versions = "*"
 [metadata]
 lock-version = "1.1"
     python-versions = "^3.8"
-content-hash = "855f68f4df6de43dfdfc241bfd7f0e653c69db5ce6a33024e6f4131f15059b70"
+content-hash = "df38387bfc2d98aa34cf6112cb9dd0db4ab02f761b73e2ae303d1d52c11dc99e"
 
 [metadata.files]
 appdirs = [
@@ -859,7 +861,7 @@ flywheel-bids = [
     {file = "flywheel_bids-0.9.1-py2.py3-none-any.whl", hash = "sha256:da035b43823b3960e7eec99d3f2345d9ce905c54412d18f91c2b5fb349ca1584"},
 ]
 flywheel-gear-toolkit = [
-    {file = "flywheel_gear_toolkit-0.1.3-py3-none-any.whl", hash = "sha256:b43607b9038d29bba0752ec5ff45b028f13d8da6f5910b39bbeb087b0de0461e"},
+    {file = "flywheel_gear_toolkit-0.2.1-py3-none-any.whl", hash = "sha256:aeff14ca8e3ad9049671279406bd017337e339b8b327769727f852412f696b30"},
 ]
 flywheel-gears = [
     {file = "flywheel_gears-0.2.0-py2.py3-none-any.whl", hash = "sha256:0d89081ec0ea6beb67fe7dc21b093e12b7953622e36c8ceeb7d13a7606a36735"},
@@ -871,7 +873,7 @@ future = [
     {file = "future-0.18.2.tar.gz", hash = "sha256:b1bead90b70cf6ec3f0710ae53a525360fa360d306a86583adc6bf83a4db537d"},
 ]
 fw-file = [
-    {file = "fw_file-0.4.4-py3-none-any.whl", hash = "sha256:e681343c097a7a1c37404e5ab70d16830c76e0d4c5e9040a2827c728b83e25e6"},
+    {file = "fw_file-0.5.0-py3-none-any.whl", hash = "sha256:86d62577a85e8754a76a63075253ca628965e4416e59b818b90e909304a32b7b"},
 ]
 fw-meta = [
     {file = "fw_meta-0.3.1-py3-none-any.whl", hash = "sha256:c104d5df1b4974dca3eab9d5b4717ff7eb4150a79630d6ab4436f1582defc6d3"},
