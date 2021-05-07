@@ -19,7 +19,7 @@ def main(
     """Curates a flywheel project using a curator.
 
     Args:
-        client (flywheel.Client): The flywheel sdk client.
+        context (GearToolkitContext): The flywheel gear toolkit context.
         project (flywheel.Project): The project to curate.
         curator_path (Path-like): A path to a curator module.
         kwargs (dict): Dictionary of attributes/value to set on curator.
@@ -52,9 +52,11 @@ if __name__ == "__main__":  # pragma: no cover
 
     args = parser.parse_args()
     client = flywheel.Client(args.api_key)
+    context = GearToolkitContext()
+    context.client = client
     project = client.lookup(args.path)
     main(
-        client,
+        context,
         project,
         args.curator,
         additional_input_one=args.additional_input_one,
