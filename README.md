@@ -6,6 +6,32 @@ This hierarchy curation gear is able to take an implementation of the HierarchyC
 execute it on a project, walking down the hierarchy through project, subject, session, 
 acquisition, analysis and file containers.
 
+## Description
+
+The Hierarchy curator walks _down_ the hierarchy breadth-first by default.  The gear can be launched from any level in the Flywheel Hierarchy and has access to every container below and including the run container.
+
+For example if the hierarchy curator is run from Subject level, the first container encountered when walking the hierarchy would be the Subject in which it was run, then it would walk to each session, then it would walk to each acquisition under those sessions, and finally each file under those acquisitions.
+
+For each container encountered when walking the hierarchy, the curator will call `validate_<container>` to decide whether it should curate that container.  The `validate_<container>` by default returns True, but can be overriden with custom logic.
+
+If `validate_<container>` returns True, then `curate_<container>` is called.  In `curate_<container>`, you have access to the SDK model of that container and the class instance.  
+
+You can save information from any level into the class instance itself, and then access that lower down.  For example if you wanted to set file level information based on subject metadata, you could write a curator like the following:
+
+```python
+from flywheel_gear_toolkit.utils.curator import HierarchyCurator
+
+class Curator(HierarchyCurator):
+
+	def curate_subject(self, sub):
+		self.sub_label = sub.label
+
+	...
+	def curate_file(self, file_):
+		if file_.type is 'dicom':
+			file_.update_info({'PatientID':self.sub_label})
+```
+
 ## Gear Inputs
 
 ### Required
@@ -104,8 +130,7 @@ The file-curator gear comes with the following python packages installed:
 __Note__: See package versions in [./pyproject.toml](pyproject.toml)
 
 If you need other dependencies that aren't installed by default, the gear-toolkit provides 
-an interface to programmatically install dependencies.  You can specify a `requirements.txt` 
-file as one of the additional inputs then install them with your `Curator.__init__` method:
+an interface to programmatically install dependencies.  You can specify extra packages in the `__init__` method.
 ```python
 from flywheel_gear_toolkit.utils import install_requirements
 ...
@@ -113,3 +138,80 @@ class Curator(HierarchyCurator):
     def __init__(self, **kwargs):
         super().__init__(**kwargs, extra_packages=["tqdm==x.y.z"])
 ```
+
+### Breadth-first vs. depth-first traversal.
+
+By default the walker used in HierarchyCuratror uses depth-first traversal, this can be adjusted by setting the `depth_first` attribute to either `True` or `False` in your `Curator` class.  
+
+For example if you run the gear from subject `sub-01` and there are two sessions underneath each with two acquisitions, you might have a tree that looks like:
+
+```bash
+sub-01
+├── ses-screening
+│   ├── acq-anat1
+│   │   └── T1w.dicom.zip
+│   └── acq-func1
+│       └── task1.dicom.zip
+└── ses-visit1
+   ├── acq-anat1
+   │   └── T1w.dicom.zip
+   └── acq-func1
+       └── task1.dicom.zip
+```
+
+If you set your curator to run depth-first:
+```python
+from flywheel_gear_toolkit.utils import install_requirements
+...
+class Curator(HierarchyCurator):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.depth_first = True
+```
+
+Then your traversal order would be as follows:
+
+```bash
+sub-01                       1.
+├── ses-screening            2. 
+│   ├── acq-anat1            3.
+│   │   └── T1w.dicom.zip    4. 
+│   └── acq-func1            5.
+│       └── task1.dicom.zip  6.
+└── ses-visit1               7.
+   ├── acq-anat1             8.
+   │   └── T1w.dicom.zip     9.
+   └── acq-func1             10.
+       └── task1.dicom.zip   11.
+```
+
+Whereas if you want breadth first:
+
+```python
+from flywheel_gear_toolkit.utils import install_requirements
+...
+class Curator(HierarchyCurator):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.depth_first = False
+```
+
+your traversal order would be:
+
+```bash
+sub-01                       1.
+├── ses-screening            2. 
+│   ├── acq-anat1            4.
+│   │   └── T1w.dicom.zip    8. 
+│   └── acq-func1            5.
+│       └── task1.dicom.zip  9.
+└── ses-visit1               3.
+   ├── acq-anat1             6.
+   │   └── T1w.dicom.zip     10.
+   └── acq-func1             7.
+       └── task1.dicom.zip   11.
+```
+
+
+
+
