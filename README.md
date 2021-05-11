@@ -55,6 +55,36 @@ class Curator(HierarchyCurator):
 
 Examples of such scripts can be found in the examples [folder](./examples)
 
+### Configuration
+
+Configuration of your curator class is done through the `self.config` object, which is an instance of `CuratorConfig` and has default values set.  The following options are available, with stated defaults:
+
+* `depth_first` (bool): Whether or not to walk the hierarchy depth-first.  `True` for depth-first, `False` for breadth-first.  Defaults to `True`
+* `reload` (bool): Whether or not to reload containers when walking the hierarchy. Defaults to `False`.
+bol)
+* `stop_level` (str, None): Optional container level at which to stop queueing children.  For example, if you set `stop_level` to `session`, and run the curator at a project level, you will walk through all subjects and sessions, but not touch any acquisitions.  __NOTE__: This does not exclude files attached to a higher level container.  In the previous example, you would still get subject level and session level files, but no acquisition level files.
+* `callback` (Callable): This is a function that accepts a container and returns a boolean.  It has the same signature as `validate_container()`.  When walking the hierarchy, this function will be called in between selecting the next container, and queueing its children, so you can use this function to dynamically decide if you want to queue a given containers children.
+
+For example, you can write a custom `validate_session()` to exclude children of sessions whose label don't match a regex: 
+
+```python
+class Curator(HierarchyCurator):
+    def __init__(self):
+        super().__init__(self)
+        self.config.callback = self.validate_container
+
+    def validate_session(session):
+        regex = re.compile(r'^trial-\d+$')
+        if regex.match(session.label):
+            return True
+        return False
+
+    def curate_acquisition(acquisition):
+        ...
+```
+In the above example, the curator will walk the hierarchy.  When it reaches a session, it will first call `self.validate_container()` on that session, which in turn calls `self.validate_session()` (See [Validation Methods](#validate)).  `self.validate_session()` will only return `True` if the session starts with `trial-` and has a number (such as `trial-1`).  If `self.validate_session()` returns False, then the children of that session will not be queued and you won't curate any acquisitions, analyses, or files under this session.  __NOTE__: Session attached files would still show up in `curate_file`
+
+
 ### Curate Methods
 The Curator Class must define curate methods for each container type 
 (excluding groups and collections). For each container, the method is 
@@ -69,11 +99,13 @@ For example, for the project container the curation method is defined as:
 This pattern is consistent for all containers. For the files container the method is 
 named `curate_file` and takes `file_` as input (note the underscore).
 
-### Validate Methods
+### <a name='validate'></a> Validate Methods
 In addition to the curate methods, the implementation can inherit _validate_ methods 
-specific to each container. By default these methods will always return `False`. 
-However, if, for example, curating a file is a time consuming process, it may be useful 
-to tag a file during the curation method and check for that tag elsewhere in the 
+specific to each container. By default these methods will always return `True`. 
+
+There is a `validate` method for each container level, e.g. `validate_project()`, `validate_subject()`, etc.  When a container is reached during the walking process, the `HierarchyCurator` routes it to the correct method by calling `self.validate_container()`. None, any, or all of these methods can be extended.
+
+Extending a `validate` method may be useful when curation is a time consuming process, or you are doing multiple runs of the curation script. For example, you may tag a file during the curation method and check for that tag later in the 
 validate method. Below is an example of how one might accomplish that:
 
 ```python

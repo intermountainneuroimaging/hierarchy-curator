@@ -30,10 +30,19 @@ def main(
     """
     curator = get_curator(context, curator_path, **kwargs)
 
-    project_walker = walker.Walker(parent, depth_first=curator.depth_first)
+    # Curator specific configuration unpack
+    config = curator.config
+
+    project_walker = walker.Walker(
+        parent,
+        depth_first=config.depth_first,
+        reload=config.reload,
+        stop_level=config.stop_level
+    )
     try:  # pragma: no cover
-        for container in project_walker.walk():
-            curator.curate_container(container)  # Tested in gear toolkit
+        for container in project_walker.walk(callback=config.callback):
+            if curator.validate_container(container):
+                curator.curate_container(container)  # Tested in gear toolkit
     except Exception:  # pylint: disable=broad-except pragma: no cover
         log.error("Uncaught Exception", exc_info=True)
         return
