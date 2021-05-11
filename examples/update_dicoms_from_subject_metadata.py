@@ -10,7 +10,7 @@ class Curator(HierarchyCurator):
         # Curate depth first
         #   Important to curate depth first so that all files in curate_file
         #   Are guaranteed to be under the current self.sub_label
-        self.depth_first = True
+        self.config.depth_first = True
 
     def curate_subject(self, subject):
         self.sub_label = subject.label

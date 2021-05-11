@@ -16,6 +16,8 @@ log.setLevel("DEBUG")
 class Curator(HierarchyCurator):
     def __init__(self):
         super().__init__(**kwargs)
+        # Stop at project level since we only care about curating project
+        self.config.stop_level = 'project'
 
     def curate_project(self, project: flywheel.Project):
         if self.additional_input_one:
@@ -25,18 +27,3 @@ class Curator(HierarchyCurator):
                 session.update(label=r["label"])
         else:
             raise ValueError("no csv file found")
-
-    def curate_subject(self, subject: flywheel.Subject):
-        pass
-
-    def curate_session(self, session: flywheel.Session):
-        pass
-
-    def curate_acquisition(self, acquisition: flywheel.Acquisition):
-        pass
-
-    def curate_analysis(self, analysis):
-        pass
-
-    def curate_file(self, file_: flywheel.FileEntry):
-        pass
