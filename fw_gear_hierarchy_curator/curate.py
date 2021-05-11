@@ -32,7 +32,6 @@ def main(
             curator.curate_container(container)  # Tested in gear toolkit
     except Exception:  # pylint: disable=broad-except pragma: no cover
         log.error("Uncaught Exception", exc_info=True)
-        curator.__del__()
 
 
 if __name__ == "__main__":  # pragma: no cover
