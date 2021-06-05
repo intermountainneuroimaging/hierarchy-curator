@@ -138,29 +138,23 @@ urllib3 = ">=1.26.2"
 
 [[package]]
 name = "flywheel-gear-toolkit"
-version = "0.3.0"
+version = "0.3.1"
 description = "Tooling for developing Flywheel gears"
 category = "main"
 optional = false
-python-versions = "^3.7"
+python-versions = ">=3.7,<4.0"
 
 [package.dependencies]
-dotty-dict = "^1.2.1"
-flywheel-bids = "^0.9.1"
-flywheel-gears = "^0.2.0"
+dotty-dict = ">=1.2.1,<2.0.0"
+flywheel-bids = ">=0.9.1,<0.10.0"
+flywheel-gears = ">=0.2.0,<0.3.0"
 flywheel-sdk = ">=14.2.0"
-jsonschema = "^3.2.0"
-pydantic = "^1.8.1"
+jsonschema = ">=3.2.0,<4.0.0"
+pydantic = ">=1.8.1,<2.0.0"
 
 [package.extras]
-all = ["numpy (^1)"]
-numpy = ["numpy (^1)"]
-
-[package.source]
-type = "git"
-url = "https://gitlab.com/flywheel-io/public/gear-toolkit.git"
-reference = "GEAR-1066-grp7-compat"
-resolved_reference = "8098a74ee417f3c7157d4dee71af428711e84a9e"
+all = ["numpy (>=1,<2)"]
+numpy = ["numpy (>=1,<2)"]
 
 [[package]]
 name = "flywheel-gears"
@@ -759,7 +753,7 @@ python-versions = "*"
 [metadata]
 lock-version = "1.1"
     python-versions = "^3.8"
-content-hash = "fc90a6a1ce3e4ce258f723819dd04d6ebb5af9cec20a9b586e876a3efe79102c"
+content-hash = "3d71cd4ccc626f8c9ccd776eed54a4d10338af30ddcef781c8aa29da73b0f653"
 
 [metadata.files]
 appdirs = [
@@ -857,7 +851,9 @@ dotty-dict = [
 flywheel-bids = [
     {file = "flywheel_bids-0.9.2-py2.py3-none-any.whl", hash = "sha256:765fcd270df520c30d01b9eb0cf874ad3c7ad58262123fbe7921e603c4895379"},
 ]
-flywheel-gear-toolkit = []
+flywheel-gear-toolkit = [
+    {file = "flywheel_gear_toolkit-0.3.1-py3-none-any.whl", hash = "sha256:5a3ac4b0cafa369235a64d6e3dbc418c52958082eb441ff8be5821edeb2c3f10"},
+]
 flywheel-gears = [
     {file = "flywheel_gears-0.2.0-py2.py3-none-any.whl", hash = "sha256:0d89081ec0ea6beb67fe7dc21b093e12b7953622e36c8ceeb7d13a7606a36735"},
 ]

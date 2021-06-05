@@ -15,7 +15,7 @@ license = "MIT"
     pydicom = "^2.1.1"
     pypng = "^0.0.20"
     fw-file = "^0.7"
-    flywheel-gear-toolkit = {git="https://gitlab.com/flywheel-io/public/gear-toolkit.git", branch="GEAR-1066-grp7-compat"}
+    flywheel-gear-toolkit = "^0.3"
 
 
     [tool.poetry.dev-dependencies]
