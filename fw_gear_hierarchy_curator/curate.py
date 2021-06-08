@@ -3,11 +3,12 @@ import argparse
 import logging
 import sys
 from pathlib import Path
+import multiprocessing
 
 import flywheel
 from flywheel_gear_toolkit import GearToolkitContext
 from flywheel_gear_toolkit.utils import datatypes, walker
-from flywheel_gear_toolkit.utils.curator import get_curator
+from flywheel_gear_toolkit.utils.curator import get_curator, HierarchyCurator
 
 sys.path.insert(0, str(Path(__file__).parents[1]))
 
@@ -29,6 +30,19 @@ def main(
         kwargs (dict): Dictionary of attributes/value to set on curator.
     """
     curator = get_curator(context, curator_path, **kwargs)
+    if curator.multi:
+        def run_curate(queue: multiprocessing.Queue) -> None:
+            container = queue.get()
+            if curator.validate_container(container):
+                curator.curate_container(container)
+
+        queue = multiprocessing.Queue()
+        num_cpus = multiprocessing.cpu_count()
+        processes = []
+        for _ in range(num_cpus):
+            proc  = multiprocessing.Process(target=run_curate, args=(queue,))
+            proc.start()
+            processes.append(proc)
 
     # Curator specific configuration unpack
     config = curator.config
@@ -40,12 +54,20 @@ def main(
         stop_level=config.stop_level
     )
     try:  # pragma: no cover
-        for container in project_walker.walk(callback=config.callback):
-            if curator.validate_container(container):
-                curator.curate_container(container)  # Tested in gear toolkit
+        if curator.multi:
+            for container in project_walker.walk(callback=config.callback):
+                queue.put((curator, container))
+        else:
+            for container in project_walker.walk(callback=config.callback):
+                if curator.validate_container(container):
+                    curator.curate_container(container)
+
     except Exception:  # pylint: disable=broad-except pragma: no cover
         log.error("Uncaught Exception", exc_info=True)
-        return
+    
+    if curator.multi:
+        for proc in processes:
+            proc.join()
 
 
 if __name__ == "__main__":  # pragma: no cover
