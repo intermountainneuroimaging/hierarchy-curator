@@ -12,15 +12,21 @@ __Enhancements:__
   * Configuration options
   * callback usage
   * validate_<container> methods.
+* Add ability to enable multi-threading on `curate` methods.
 
 __Maintenance:__
 
 * Adjust info/debugging log output in walker.
+* Remove `__del__()` call in exception cleanup.
 
 ## 1.1.0
-DOC:
+
+__Documenation__:
+
 * Add documentation on installing dependencies programatically
 * Add documentation on configuration options for breadth/depth first walking
 * Add example curator script to update file metadata based on subject metadata.
-BUG:
+
+__Enhancements__:
+
 * Clear up doc and CLI script to make sure we're passing in context to curator class, and not raw `flywheel.Client`

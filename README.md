@@ -244,6 +244,11 @@ sub-01                       1.
        └── task1.dicom.zip   11.
 ```
 
+### Enabling multi-threading on curate methods.
+
+Multithreading, which takes advantage of the built-in `multithreading.Process` class, can be enable to run more than one thread at once.
+
+Setting the `multi` attribute to `True` in your curator class will enable multithreading to run on all available processors.
 
 
 
