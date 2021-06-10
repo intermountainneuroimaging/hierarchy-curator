@@ -12,6 +12,7 @@ RUN poetry install --no-dev
 
 COPY run.py manifest.json $FLYWHEEL/
 COPY fw_gear_hierarchy_curator $FLYWHEEL/fw_gear_hierarchy_curator
+COPY curator $FLYWHEEL/curator
 
 # Configure entrypoint
 RUN chmod a+x $FLYWHEEL/run.py
