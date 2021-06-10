@@ -2,6 +2,7 @@
 import argparse
 import logging
 import math
+import os
 import sys
 from pathlib import Path
 import multiprocessing
@@ -15,6 +16,10 @@ sys.path.insert(0, str(Path(__file__).parents[1]))
 log = logging.getLogger(__name__)
 
 def worker(curator, children):
+    log.debug(
+        f"Initializing worker with {len(children)} tree nodes. "+
+        f"PPID: {os.getppid()}, PID: {os.getpid()}"
+    )
     if curator.config.depth_first:
         for child in children:
             w = walker.Walker(
@@ -46,6 +51,8 @@ def worker(curator, children):
                     curator.curate_container(container)
             except Exception:  # pylint: disable=broad-except pragma: no cover
                 log.error("Uncaught Exception", exc_info=True)
+    log.debug(f'Worker with pid {os.getpid()} completed')
+    return
                 
 
 
@@ -95,6 +102,7 @@ def run_multiproc(curator, root_walker):
     queue = multiprocessing.Queue()
     if curator.reporter:
         # Logger process
+        log.info('Initializing logging process')
         r = curator.reporter
         logger = multiprocessing.Process(
             target=reporters.worker,
@@ -114,11 +122,12 @@ def run_multiproc(curator, root_walker):
         proc.start()
         worker_ps.append(proc)
     for proc in worker_ps:
-        proc.start()
-    for proc in worker_ps:
         proc.join()
+        log.debug(f'Process {proc.name} finished')
     if curator.reporter:
         curator.reporter.write('END')
+    
+
 
 
 
