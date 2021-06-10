@@ -8,7 +8,7 @@ import multiprocessing
 
 import flywheel
 from flywheel_gear_toolkit import GearToolkitContext
-from flywheel_gear_toolkit.utils import datatypes, walker, reporters, curator
+from flywheel_gear_toolkit.utils import datatypes, walker, reporters, curator as c
 
 sys.path.insert(0, str(Path(__file__).parents[1]))
 
@@ -64,7 +64,7 @@ def main(
         kwargs (dict): Dictionary of attributes/value to set on curator.
     """
     # Initialize curator
-    curator = curator.get_curator(context, curator_path, **kwargs)
+    curator = c.get_curator(context, curator_path, **kwargs)
     # Initialize walker from root container
     root_walker = walker.Walker(
         parent,
@@ -104,7 +104,7 @@ def run_multiproc(curator, root_walker):
     # Start by curating first container, then init workers on children
     root = root_walker.next()
     children = list(root_walker.deque)
-    children_per_worker = math.ceil(children / workers)
+    children_per_worker = math.ceil(len(children) / workers)
     # Worker processes
     worker_ps = []
     while len(children):

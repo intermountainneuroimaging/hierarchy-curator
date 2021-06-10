@@ -155,8 +155,8 @@ pydantic = "^1.8.1"
 [package.source]
 type = "git"
 url = 'https://gitlab.com/flywheel-io/public/gear-toolkit.git'
-reference = 'GEAR-1040-curator-config'
-resolved_reference = "e669d4f84352c0bf94064fffb0d4bb99e461b21f"
+reference = 'GEAR-1134-multi-thread'
+resolved_reference = "09dd42a7a5da3e20e3216abb729408f59c2aa752"
 
 [[package]]
 name = "flywheel-gears"
@@ -755,7 +755,7 @@ python-versions = "*"
 [metadata]
 lock-version = "1.1"
     python-versions = "^3.8"
-content-hash = "921e596cbf16e8d4767f23d4967d90e9ffab64d1b49f714c5ec9e727d157b713"
+content-hash = "ba83327b3672fd5ac596a4e3b6a850ae16e535dc7363f377bd6c956d8fe8e484"
 
 [metadata.files]
 appdirs = [
