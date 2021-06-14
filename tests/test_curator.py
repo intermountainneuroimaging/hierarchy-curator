@@ -13,21 +13,26 @@ ASSETS_DIR = Path(__file__).parent / "assets"
 
 @pytest.fixture(scope='session', autouse=True)
 def reset_log():
-    logging.basicConfig(stream=sys.stdout, level=logging.INFO)
+    logging.basicConfig(
+        stream=sys.stdout,
+        format='%(levelname)-8s [%(filename)s:%(lineno)d] %(message)s',
+        level=logging.DEBUG
+    )
     log = logging.getLogger()
 
 
 @pytest.fixture()
-def caplog_workaround():
+def caplog_multithreaded():
     @contextmanager
     def ctx():
         logger_queue = Queue()
         logger = logging.getLogger()
         logger.addHandler(handlers.QueueHandler(logger_queue))
         yield
-        while not logger_queue.empty():
-            print("Forwaring message")
+        while True:
             log_record: logging.LogRecord = logger_queue.get()
+            if log_record.message == 'END':
+                break
             logger = logging.getLogger(log_record.name)
             logger._log(
                 level=log_record.levelno,
@@ -35,7 +40,6 @@ def caplog_workaround():
                 args=log_record.args,
                 exc_info=log_record.exc_info,
             )
-
     return ctx
 
 @pytest.fixture
@@ -51,18 +55,24 @@ def oneoff_curator():
                 super().__init__(**kwargs)
                 self.config.report = report
                 self.config.multi = multi
+                self.config.workers=2
+                self.calls = {}
 
             def curate_project(self, proj):
-                log.info(proj.label)
+                self.calls['project'] = self.calls.get('project',0) + 1
+                log.info(f"label: {proj.label}, calls: {self.calls['project']}")
 
             def curate_subject(self, sub):
-                log.info(sub.label)
+                self.calls['subject'] = self.calls.get('subject',0) + 1
+                log.info(f"label: {sub.label}, calls: {self.calls['subject']}")
 
             def curate_session(self, ses):
-                log.info(ses.label)
+                self.calls['session'] = self.calls.get('session',0) + 1
+                log.info(f"label: {ses.label}, calls: {self.calls['session']}")
 
             def curate_acquisition(self, acq):
-                log.info(acq.label)
+                self.calls['acquisition'] = self.calls.get('acquisition',0) + 1
+                log.info(f"label: {acq.label}, calls: {self.calls['acquisition']}")
 
         return reporter()
 
@@ -75,7 +85,7 @@ def test_curate_main_initializes_reporter(
     oneoff_curator,
     mocker,
     caplog,
-    caplog_workaround
+    caplog_multithreaded
 ):
     client = None
     project = fw_project(n_subjects=2)
@@ -90,8 +100,10 @@ def test_curate_main_initializes_reporter(
 
     get_curator_patch.return_value = oneoff_curator(report=True, multi=multi)
 
-    with caplog_workaround():
+    with caplog_multithreaded():
+        log = logging.getLogger()
         main(client, project, curator_path)
+        log.info('END')
 
     records = [rec[2] for rec in caplog.record_tuples if rec[0] == 'test']
     assert records == [
