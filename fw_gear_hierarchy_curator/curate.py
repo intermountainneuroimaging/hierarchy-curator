@@ -1,5 +1,6 @@
 """Hierarchy curator main interface."""
 import argparse
+import copy
 import logging
 import math
 import multiprocessing
@@ -18,43 +19,49 @@ log = logging.getLogger(__name__)
 
 
 def worker(curator, children):
-    log.debug(
-        f"Initializing worker with {len(children)} tree nodes. "
-        + f"PPID: {os.getppid()}, PID: {os.getpid()}"
-    )
-    if curator.config.depth_first:
-        for child in children:
+    try:
+        log.debug(
+            f"Initializing worker with {len(children)} tree nodes. "
+            + f"PPID: {os.getppid()}, PID: {os.getpid()}"
+        )
+        if curator.config.depth_first:
+            for child in children:
+                w = walker.Walker(
+                    child,
+                    depth_first=curator.config.depth_first,
+                    reload=curator.config.reload,
+                    stop_level=curator.config.stop_level,
+                )
+                local_curator = copy.deepcopy(curator)
+                for container in w.walk(callback=curator.config.callback):
+                    try:
+                        if local_curator.validate_container(container):
+                            local_curator.curate_container(container)
+                    except Exception:  # pylint: disable=broad-except pragma: no cover
+                        log.error("Uncaught curation exception", exc_info=True)
+
+        else:
+            local_curator = copy.deepcopy(curator)
+            first_elem = children.pop(0)
             w = walker.Walker(
-                child,
+                first_elem,
                 depth_first=curator.config.depth_first,
                 reload=curator.config.reload,
                 stop_level=curator.config.stop_level,
             )
+            if children:
+                w.extend(children)
             for container in w.walk(callback=curator.config.callback):
                 try:
-                    if curator.validate_container(container):
-                        curator.curate_container(container)
+                    if local_curator.validate_container(container):
+                        local_curator.curate_container(container)
                 except Exception:  # pylint: disable=broad-except pragma: no cover
-                    log.error("Uncaught Exception", exc_info=True)
-
-    else:
-        first_elem = children.pop(0)
-        w = walker.Walker(
-            first_elem,
-            depth_first=curator.config.depth_first,
-            reload=curator.config.reload,
-            stop_level=curator.config.stop_level,
-        )
-        if children:
-            w.extend(children)
-        for container in w.walk(callback=curator.config.callback):
-            try:
-                if curator.validate_container(container):
-                    curator.curate_container(container)
-            except Exception:  # pylint: disable=broad-except pragma: no cover
-                log.error("Uncaught Exception", exc_info=True)
-    log.debug(f"Worker with pid {os.getpid()} completed")
-    return
+                    log.error("Uncaught curation exception", exc_info=True)
+        log.debug(f"Worker with pid {os.getpid()} completed")
+    except Exception:  # pylint: disable=broad-except
+        log.error('Exception in worker process:', exc_info=True)
+    finally:
+        return
 
 
 def main(

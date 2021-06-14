@@ -1,7 +1,7 @@
 import logging
 import pytest
 import sys
-from contextlib import contextmanager
+from contextlib import contextmanager, nullcontext
 from logging import handlers
 from multiprocessing import Queue
 from pathlib import Path
@@ -56,30 +56,48 @@ def oneoff_curator():
                 self.config.report = report
                 self.config.multi = multi
                 self.config.workers=2
-                self.calls = {}
+                self.data = {
+                    'project': "",
+                    'subject': "",
+                    'session': "",
+                    'acquisition': "",
+                }
 
             def curate_project(self, proj):
-                self.calls['project'] = self.calls.get('project',0) + 1
-                log.info(f"label: {proj.label}, calls: {self.calls['project']}")
+                self.data['project'] = proj.label
+                path = self.data['project']
+                log.info(path)
 
             def curate_subject(self, sub):
-                self.calls['subject'] = self.calls.get('subject',0) + 1
-                log.info(f"label: {sub.label}, calls: {self.calls['subject']}")
+                self.data['subject'] = sub.label
+                path = f"{self.data['project']}/{self.data['subject']}"
+                log.info(path)
 
             def curate_session(self, ses):
-                self.calls['session'] = self.calls.get('session',0) + 1
-                log.info(f"label: {ses.label}, calls: {self.calls['session']}")
+                self.data['session'] = ses.label
+                path = (
+                    self.data['project'] + "/" + 
+                    self.data['subject'] + "/" + 
+                    self.data['session']
+                )
+                log.info(path)
 
             def curate_acquisition(self, acq):
-                self.calls['acquisition'] = self.calls.get('acquisition',0) + 1
-                log.info(f"label: {acq.label}, calls: {self.calls['acquisition']}")
+                self.data['acquisition'] = acq.label
+                path = (
+                    self.data['project'] + "/" +
+                    self.data['subject'] + "/" +
+                    self.data['session'] + "/" +
+                    self.data['acquisition']
+                )
+                log.info(path)
 
         return reporter()
 
     return _gen
 
 @pytest.mark.parametrize('multi',[True, False])
-def test_curate_main_initializes_reporter(
+def test_curate_main_depth_first(
     multi,
     fw_project,
     oneoff_curator,
@@ -100,17 +118,54 @@ def test_curate_main_initializes_reporter(
 
     get_curator_patch.return_value = oneoff_curator(report=True, multi=multi)
 
-    with caplog_multithreaded():
+    with (caplog_multithreaded() if multi else nullcontext()):
         log = logging.getLogger()
         main(client, project, curator_path)
         log.info('END')
 
     records = [rec[2] for rec in caplog.record_tuples if rec[0] == 'test']
-    assert records == [
+    assert all(val in records for val in [
         'Mock',
-        'sub-1','ses-1-0', 'acq-1-0-0',
-        'sub-0','ses-0-0', 'acq-0-0-0'
-    ]
+        'Mock/sub-1', 'Mock/sub-1/ses-1-0', 'Mock/sub-1/ses-1-0/acq-1-0-0',
+        'Mock/sub-0', 'Mock/sub-0/ses-0-0', 'Mock/sub-0/ses-0-0/acq-0-0-0'
+    ])
+
+
+@pytest.mark.parametrize('multi',[True, False])
+def test_curate_main_breadth_first(
+    multi,
+    fw_project,
+    oneoff_curator,
+    mocker,
+    caplog,
+    caplog_multithreaded
+):
+    client = None
+    project = fw_project(n_subjects=2)
+    curator_path = ASSETS_DIR / "dummy_curator.py"
+
+    get_curator_patch = mocker.patch(
+        'fw_gear_hierarchy_curator.curate.c.get_curator'
+    )
+    reporter_mock = mocker.patch(
+        'fw_gear_hierarchy_curator.curate.reporters.AggregatedReporter'
+    )
+
+    get_curator_patch.return_value = oneoff_curator(report=True, multi=multi)
+    get_curator_patch.return_value.config.depth_first = False
+
+    with (caplog_multithreaded() if multi else nullcontext()):
+        log = logging.getLogger()
+        main(client, project, curator_path)
+        log.info('END')
+
+    records = [rec[2] for rec in caplog.record_tuples if rec[0] == 'test']
+    assert all(val in records for val in [
+        'Mock',
+        'Mock/sub-1', 'Mock/sub-1/ses-1-0', 'Mock/sub-1/ses-1-0/acq-1-0-0',
+        'Mock/sub-0', 'Mock/sub-0/ses-0-0', 'Mock/sub-0/ses-0-0/acq-0-0-0'
+    ])
+ 
 
 
 def test_curate_main_with_a_dummy_curator(fw_project):
