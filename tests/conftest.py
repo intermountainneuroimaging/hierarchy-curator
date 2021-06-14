@@ -3,6 +3,7 @@ from pathlib import Path
 import flywheel
 import pytest
 
+pytest_plugins = ('fw_gear_testing',)
 
 class MockFinder:
     def __init__(self, arr):
@@ -63,13 +64,13 @@ def fw_project():
             subject = MockSubject(label=f"sub-{i}")
             sessions = []
             for j in range(n_sessions):
-                session = MockSession(label=f"ses-{j}")
+                session = MockSession(label=f"ses-{i}-{j}")
                 acquisitions = []
                 for k in range(n_acquisitions):
-                    acquisition = MockAcquisition(label=f"acq-{k}")
+                    acquisition = MockAcquisition(label=f"acq-{i}-{j}-{k}")
                     files = []
                     for l in range(n_files):
-                        files.append(flywheel.FileEntry(name=f"file-{l}"))
+                        files.append(flywheel.FileEntry(name=f"file-{i}-{j}-{k}-{l}"))
                     acquisition.files = files
                     acquisitions.append(acquisition)
                 session.acquisitions = MockFinder(acquisitions)

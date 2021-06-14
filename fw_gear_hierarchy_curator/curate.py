@@ -124,7 +124,7 @@ def run_multiproc(curator, root_walker):
         worker_ps.append(proc)
     for proc in worker_ps:
         proc.join()
-        log.debug(f"Process {proc.name} finished")
+        log.debug(f"Process {proc.name} exited with {proc.exitcode}")
     if curator.reporter:
         curator.reporter.write("END")
 
