@@ -6,7 +6,9 @@ import math
 import multiprocessing
 import os
 import sys
+from contextlib import contextmanager
 from pathlib import Path
+
 
 import flywheel
 from flywheel_gear_toolkit import GearToolkitContext
@@ -14,54 +16,24 @@ from flywheel_gear_toolkit.utils import curator as c
 from flywheel_gear_toolkit.utils import datatypes, reporters, walker
 
 sys.path.insert(0, str(Path(__file__).parents[1]))
-
 log = logging.getLogger(__name__)
 
-
-def worker(curator, children):
-    try:
-        log.debug(
-            f"Initializing worker with {len(children)} tree nodes. "
-            + f"PPID: {os.getppid()}, PID: {os.getpid()}"
-        )
-        if curator.config.depth_first:
-            for child in children:
-                w = walker.Walker(
-                    child,
-                    depth_first=curator.config.depth_first,
-                    reload=curator.config.reload,
-                    stop_level=curator.config.stop_level,
-                )
-                local_curator = copy.deepcopy(curator)
-                for container in w.walk(callback=curator.config.callback):
-                    try:
-                        if local_curator.validate_container(container):
-                            local_curator.curate_container(container)
-                    except Exception:  # pylint: disable=broad-except pragma: no cover
-                        log.error("Uncaught curation exception", exc_info=True)
-
-        else:
-            local_curator = copy.deepcopy(curator)
-            first_elem = children.pop(0)
-            w = walker.Walker(
-                first_elem,
-                depth_first=curator.config.depth_first,
-                reload=curator.config.reload,
-                stop_level=curator.config.stop_level,
-            )
-            if children:
-                w.extend(children)
-            for container in w.walk(callback=curator.config.callback):
-                try:
-                    if local_curator.validate_container(container):
-                        local_curator.curate_container(container)
-                except Exception:  # pylint: disable=broad-except pragma: no cover
-                    log.error("Uncaught curation exception", exc_info=True)
-        log.debug(f"Worker with pid {os.getpid()} completed")
-    except Exception:  # pylint: disable=broad-except
-        log.error('Exception in worker process:', exc_info=True)
-    finally:
-        return
+def worker(curator, queue):
+    local_curator = copy.deepcopy(curator)
+    local_curator.context._client = local_curator.context.get_client()
+    while True:
+        val = queue.get()
+        if val is None:
+            log.debug('Recieved termination signal')
+            break
+        try:
+            get_container_fn = getattr(local_curator.context.client, f"get_{val['container_type']}")
+            container = get_container_fn(val['id'])
+        except flywheel.rest.ApiException as e:
+            log.error(e)
+        if local_curator.validate_container(container):
+            local_curator.curate_container(container)
+       
 
 
 def main(
@@ -80,11 +52,12 @@ def main(
     """
     # Initialize curator
     curator = c.get_curator(context, curator_path, **kwargs)
+    log.info('Curator config: '+str(curator.config))
     # Initialize walker from root container
     root_walker = walker.Walker(
         parent,
         depth_first=curator.config.depth_first,
-        reload=curator.config.reload,
+        reload=(curator.config.reload if not curator.config.multi else False),
         stop_level=curator.config.stop_level,
     )
     # Initialize reporter if in config
@@ -107,33 +80,45 @@ def main(
 
 def run_multiproc(curator, root_walker):
     # Main multiprocessing entrypoint
+    manager = multiprocessing.Manager()
+    queue = manager.Queue()
     workers = curator.config.workers
     if curator.reporter:
         # Logger process
-        log.info("Initializing logging process")
         reporter = curator.reporter
         reporter.start()
-    # Start by curating first container, then init workers on children
-    root = root_walker.next()
-    if curator.validate_container(root):
-        curator.curate_container(root)
-    children = list(root_walker.deque)
-    assignments = {i: [] for i in range(workers)}
-    for i, child in enumerate(children):
-        assignments[i % workers].append(child)
-
-    # Worker processes
+        log.info("Initialized logging process")
     worker_ps = []
-    for key in assignments.keys():
-        containers = assignments[key]
-        proc = multiprocessing.Process(target=worker, args=(curator, containers))
+    for i in range(workers):
+        proc = multiprocessing.Process(
+            target=worker,
+            args=(curator, queue),
+            name=f'worker-{i}'
+        )
         proc.start()
         worker_ps.append(proc)
-    for proc in worker_ps:
-        proc.join()
-        log.debug(f"Process {proc.name} exited with {proc.exitcode}")
+    for container in root_walker.walk(callback=curator.config.callback):
+        #log.debug(f'Found {container.container_type}, ID: {container.id}')
+
+        val = {
+            'id': container.id,
+            'container_type': container.container_type,
+        }
+        if container.container_type == 'file':
+            if hasattr(container, 'file_id'):
+                val['id'] = container.file_id
+            val['parent_type'] = container.parent.id
+            val['parent_id'] = container.parent.container_type
+        queue.put(val)
+    for i in range(workers):
+        queue.put(None)
+    for worker_p in worker_ps:
+        worker_p.join() 
+        log.info(f"Worker {worker_p.name} finished with exit code: {worker_p.exitcode}")
+
     if curator.reporter:
         curator.reporter.write("END")
+    curator.reporter.join()
 
 
 if __name__ == "__main__":  # pragma: no cover

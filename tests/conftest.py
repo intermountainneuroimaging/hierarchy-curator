@@ -3,7 +3,7 @@ from pathlib import Path
 import flywheel
 import pytest
 
-pytest_plugins = ('fw_gear_testing',)
+#pytest_plugins = ('fw_gear_testing',)
 
 class MockFinder:
     def __init__(self, arr):
