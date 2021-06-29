@@ -1,5 +1,8 @@
 # Coverage
 .coverage
+.coverage.*
+junit.xml
+coverage.xml
 htmlcov/
 
 # Cache
