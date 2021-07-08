@@ -18,6 +18,22 @@ from flywheel_gear_toolkit.utils import datatypes, reporters, walker
 sys.path.insert(0, str(Path(__file__).parents[1]))
 log = logging.getLogger(__name__)
 
+def populator(queue, root_walker, curator, workers=1):
+    for container in root_walker.walk(callback=curator.config.callback):
+        log.debug(f'Found {container.container_type}, ID: {container.id}')
+        val = {
+            'id': container.id,
+            'container_type': container.container_type,
+        }
+        if container.container_type == 'file':
+            if hasattr(container, 'file_id'):
+                val['id'] = container.file_id
+            val['parent_type'] = container.parent.id
+            val['parent_id'] = container.parent.container_type
+        queue.put(val)
+    for i in range(workers):
+        queue.put(None)
+
 def worker(curator, queue, lock):
     local_curator = copy.deepcopy(curator)
     local_curator.context._client = local_curator.context.get_client()
@@ -91,7 +107,14 @@ def run_multiproc(curator, root_walker):
         reporter.start()
         log.info("Initialized logging process")
     worker_ps = []
+    populator_proc = multiprocessing.Process(
+            target=populator,
+            args=(queue, root_walker, curator),
+            kwargs={'workers':workers}
+    )
+    populator_proc.start()
     for i in range(workers):
+        log.info(f'Initializing worker-{i}')
         proc = multiprocessing.Process(
             target=worker,
             args=(curator, queue, lock),
@@ -99,28 +122,14 @@ def run_multiproc(curator, root_walker):
         )
         proc.start()
         worker_ps.append(proc)
-    for container in root_walker.walk(callback=curator.config.callback):
-        #log.debug(f'Found {container.container_type}, ID: {container.id}')
-
-        val = {
-            'id': container.id,
-            'container_type': container.container_type,
-        }
-        if container.container_type == 'file':
-            if hasattr(container, 'file_id'):
-                val['id'] = container.file_id
-            val['parent_type'] = container.parent.id
-            val['parent_id'] = container.parent.container_type
-        queue.put(val)
-    for i in range(workers):
-        queue.put(None)
+    populator_proc.join()
     for worker_p in worker_ps:
         worker_p.join()
         log.info(f"Worker {worker_p.name} finished with exit code: {worker_p.exitcode}")
 
     if curator.reporter:
         curator.reporter.write("END")
-    curator.reporter.join()
+        curator.reporter.join()
 
 
 if __name__ == "__main__":  # pragma: no cover
