@@ -18,9 +18,10 @@ from flywheel_gear_toolkit.utils import datatypes, reporters, walker
 sys.path.insert(0, str(Path(__file__).parents[1]))
 log = logging.getLogger(__name__)
 
-def worker(curator, queue):
+def worker(curator, queue, lock):
     local_curator = copy.deepcopy(curator)
     local_curator.context._client = local_curator.context.get_client()
+    local_curator.lock = lock
     while True:
         val = queue.get()
         if val is None:
@@ -33,7 +34,7 @@ def worker(curator, queue):
             log.error(e)
         if local_curator.validate_container(container):
             local_curator.curate_container(container)
-       
+
 
 
 def main(
@@ -80,6 +81,7 @@ def main(
 
 def run_multiproc(curator, root_walker):
     # Main multiprocessing entrypoint
+    lock = multiprocessing.Lock()
     manager = multiprocessing.Manager()
     queue = manager.Queue()
     workers = curator.config.workers
@@ -92,7 +94,7 @@ def run_multiproc(curator, root_walker):
     for i in range(workers):
         proc = multiprocessing.Process(
             target=worker,
-            args=(curator, queue),
+            args=(curator, queue, lock),
             name=f'worker-{i}'
         )
         proc.start()
@@ -113,7 +115,7 @@ def run_multiproc(curator, root_walker):
     for i in range(workers):
         queue.put(None)
     for worker_p in worker_ps:
-        worker_p.join() 
+        worker_p.join()
         log.info(f"Worker {worker_p.name} finished with exit code: {worker_p.exitcode}")
 
     if curator.reporter:

@@ -143,6 +143,7 @@ description = "Tooling for developing Flywheel gears"
 category = "main"
 optional = false
 python-versions = "^3.7"
+develop = false
 
 [package.dependencies]
 dotty-dict = "^1.2.1"
@@ -153,14 +154,14 @@ jsonschema = "^3.2.0"
 pydantic = "^1.8.1"
 
 [package.extras]
-all = ["numpy (^1)"]
-numpy = ["numpy (^1)"]
+all = ["numpy (>=1,<2)"]
+numpy = ["numpy (>=1,<2)"]
 
 [package.source]
 type = "git"
 url = 'https://gitlab.com/flywheel-io/public/gear-toolkit.git'
 reference = 'GEAR-1134-multi-thread'
-resolved_reference = "1ce6a954fd6249dcd94026f797e34ae50b460f04"
+resolved_reference = "42781eecf8e0fbb5dcc4833017077aff581ec8e5"
 
 [[package]]
 name = "flywheel-gears"
@@ -652,7 +653,7 @@ urllib3 = ">=1.21.1,<1.27"
 
 [package.extras]
 security = ["pyOpenSSL (>=0.14)", "cryptography (>=1.3.4)"]
-socks = ["PySocks (>=1.5.6,<1.5.7 || >1.5.7)", "win-inet-pton"]
+socks = ["PySocks (>=1.5.6,!=1.5.7)", "win-inet-pton"]
 
 [[package]]
 name = "requests-toolbelt"
@@ -754,7 +755,7 @@ python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, <4"
 [package.extras]
 brotli = ["brotlipy (>=0.6.0)"]
 secure = ["pyOpenSSL (>=0.14)", "cryptography (>=1.3.4)", "idna (>=2.0.0)", "certifi", "ipaddress"]
-socks = ["PySocks (>=1.5.6,<1.5.7 || >1.5.7,<2.0)"]
+socks = ["PySocks (>=1.5.6,!=1.5.7,<2.0)"]
 
 [[package]]
 name = "wrapt"
