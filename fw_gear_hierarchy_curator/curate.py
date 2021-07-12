@@ -9,7 +9,6 @@ import sys
 from contextlib import contextmanager
 from pathlib import Path
 
-
 import flywheel
 from flywheel_gear_toolkit import GearToolkitContext
 from flywheel_gear_toolkit.utils import curator as c
@@ -18,22 +17,25 @@ from flywheel_gear_toolkit.utils import datatypes, reporters, walker
 sys.path.insert(0, str(Path(__file__).parents[1]))
 log = logging.getLogger(__name__)
 
-def worker(curator, queue):
+
+def worker(curator, queue, lock):
     local_curator = copy.deepcopy(curator)
     local_curator.context._client = local_curator.context.get_client()
+    locak_curator.lock = lock
     while True:
         val = queue.get()
         if val is None:
-            log.debug('Recieved termination signal')
+            log.debug("Recieved termination signal")
             break
         try:
-            get_container_fn = getattr(local_curator.context.client, f"get_{val['container_type']}")
-            container = get_container_fn(val['id'])
+            get_container_fn = getattr(
+                local_curator.context.client, f"get_{val['container_type']}"
+            )
+            container = get_container_fn(val["id"])
         except flywheel.rest.ApiException as e:
             log.error(e)
         if local_curator.validate_container(container):
             local_curator.curate_container(container)
-       
 
 
 def main(
@@ -52,7 +54,7 @@ def main(
     """
     # Initialize curator
     curator = c.get_curator(context, curator_path, **kwargs)
-    log.info('Curator config: '+str(curator.config))
+    log.info("Curator config: " + str(curator.config))
     # Initialize walker from root container
     root_walker = walker.Walker(
         parent,
@@ -82,6 +84,7 @@ def run_multiproc(curator, root_walker):
     # Main multiprocessing entrypoint
     manager = multiprocessing.Manager()
     queue = manager.Queue()
+    lock = multiprocessing.Lock()
     workers = curator.config.workers
     if curator.reporter:
         # Logger process
@@ -91,29 +94,27 @@ def run_multiproc(curator, root_walker):
     worker_ps = []
     for i in range(workers):
         proc = multiprocessing.Process(
-            target=worker,
-            args=(curator, queue),
-            name=f'worker-{i}'
+            target=worker, args=(curator, queue, lock), name=f"worker-{i}"
         )
         proc.start()
         worker_ps.append(proc)
     for container in root_walker.walk(callback=curator.config.callback):
-        #log.debug(f'Found {container.container_type}, ID: {container.id}')
+        # log.debug(f'Found {container.container_type}, ID: {container.id}')
 
         val = {
-            'id': container.id,
-            'container_type': container.container_type,
+            "id": container.id,
+            "container_type": container.container_type,
         }
-        if container.container_type == 'file':
-            if hasattr(container, 'file_id'):
-                val['id'] = container.file_id
-            val['parent_type'] = container.parent.id
-            val['parent_id'] = container.parent.container_type
+        if container.container_type == "file":
+            if hasattr(container, "file_id"):
+                val["id"] = container.file_id
+            val["parent_type"] = container.parent.id
+            val["parent_id"] = container.parent.container_type
         queue.put(val)
     for i in range(workers):
         queue.put(None)
     for worker_p in worker_ps:
-        worker_p.join() 
+        worker_p.join()
         log.info(f"Worker {worker_p.name} finished with exit code: {worker_p.exitcode}")
 
     if curator.reporter:
