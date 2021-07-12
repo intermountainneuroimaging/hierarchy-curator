@@ -4,6 +4,7 @@ from contextlib import contextmanager, nullcontext
 from logging import handlers
 from multiprocessing import Queue
 from pathlib import Path
+from unittest.mock import MagicMock
 
 import pytest
 from flywheel_gear_toolkit.utils.curator import HierarchyCurator
@@ -29,6 +30,7 @@ def caplog_multithreaded():
     def ctx():
         logger_queue = Queue()
         logger = logging.getLogger()
+        logger.setLevel(0)
         logger.addHandler(handlers.QueueHandler(logger_queue))
         yield
         while True:
@@ -48,10 +50,9 @@ def caplog_multithreaded():
 
 @pytest.fixture
 def oneoff_curator():
-
-    log = logging.getLogger("test")
-
     def _gen(report=True, multi=True):
+        log = logging.getLogger("test")
+
         class reporter(HierarchyCurator):
             def __init__(self, **kwargs):
                 super().__init__(**kwargs)
@@ -109,7 +110,7 @@ def test_curate_main_depth_first(
     multi, fw_project, oneoff_curator, mocker, caplog, caplog_multithreaded
 ):
     client = None
-    project = fw_project(n_subjects=2)
+    project = fw_project(n_subs=2)
     curator_path = ASSETS_DIR / "dummy_curator.py"
 
     get_curator_patch = mocker.patch("fw_gear_hierarchy_curator.curate.c.get_curator")
@@ -118,9 +119,11 @@ def test_curate_main_depth_first(
     )
 
     get_curator_patch.return_value = oneoff_curator(report=True, multi=multi)
+    get_curator_patch.return_value.context = MagicMock()
 
     with (caplog_multithreaded() if multi else nullcontext()):
         log = logging.getLogger()
+        log.setLevel(0)
         main(client, project, curator_path)
         log.info("END")
 

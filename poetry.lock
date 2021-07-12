@@ -153,8 +153,8 @@ jsonschema = "^3.2.0"
 pydantic = "^1.8.1"
 
 [package.extras]
-all = ["numpy (^1)"]
-numpy = ["numpy (^1)"]
+all = ["numpy (>=1,<2)"]
+numpy = ["numpy (>=1,<2)"]
 
 [package.source]
 type = "git"
@@ -218,6 +218,24 @@ pyyaml = ">=5.4.1,<6.0.0"
 [package.extras]
 all = ["fw-storage (>=0,<1)", "nibabel (>=3.2.1,<4.0.0)"]
 nifti = ["nibabel (>=3.2.1,<4.0.0)"]
+
+[[package]]
+name = "fw-gear-testing"
+version = "0.2.2"
+description = "Testing suite for Flywheel Gears"
+category = "dev"
+optional = false
+python-versions = "^3.8"
+develop = false
+
+[package.dependencies]
+flywheel-sdk = "^15.3.1"
+fw-file = "^0"
+pydicom = "^2.1.2"
+
+[package.source]
+type = "directory"
+url = "../utils/testing"
 
 [[package]]
 name = "fw-meta"
@@ -767,7 +785,7 @@ python-versions = "*"
 [metadata]
 lock-version = "1.1"
     python-versions = "^3.8"
-content-hash = "34e0dd9777d2fb53a8fc77398387e43af0f06de0a96933fa4f72cdb6aa6baf14"
+content-hash = "a3c32b10539dd26c5f8518d8a5755c7c14d60ddcccdde3ea81fe5656c91793b3"
 
 [metadata.files]
 appdirs = [
@@ -878,6 +896,7 @@ future = [
 fw-file = [
     {file = "fw_file-0.7.2-py3-none-any.whl", hash = "sha256:f59f34185fa48242b6498076d8708a475068780445f2c72b0c3fb7223c5d2441"},
 ]
+fw-gear-testing = []
 fw-meta = [
     {file = "fw_meta-0.3.2-py3-none-any.whl", hash = "sha256:d75232f2056dcbb1e78c96a36af6011448bc3a9898264a6442ad1eddb1c4608b"},
 ]

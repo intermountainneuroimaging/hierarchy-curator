@@ -18,24 +18,46 @@ sys.path.insert(0, str(Path(__file__).parents[1]))
 log = logging.getLogger(__name__)
 
 
+def populator(queue, root_walker, curator, workers=1):
+    for container in root_walker.walk(callback=curator.config.callback):
+        log.debug(f"Found {container.container_type}, ID: {container.id}")
+        val = {
+            "id": container.id,
+            "container_type": container.container_type,
+        }
+        if container.container_type == "file":
+            if hasattr(container, "file_id"):
+                val["id"] = container.file_id
+            val["parent_type"] = container.parent.id
+            val["parent_id"] = container.parent.container_type
+        queue.put(val)
+    for i in range(workers):
+        queue.put(None)
+
+
 def worker(curator, queue, lock):
     local_curator = copy.deepcopy(curator)
     local_curator.context._client = local_curator.context.get_client()
-    locak_curator.lock = lock
+    local_curator.lock = lock
     while True:
-        val = queue.get()
-        if val is None:
-            log.debug("Recieved termination signal")
-            break
         try:
-            get_container_fn = getattr(
-                local_curator.context.client, f"get_{val['container_type']}"
-            )
-            container = get_container_fn(val["id"])
-        except flywheel.rest.ApiException as e:
+            val = queue.get()
+            if val is None:
+                log.debug("Recieved termination signal")
+                break
+            try:
+                get_container_fn = getattr(
+                    local_curator.context.client, f"get_{val['container_type']}"
+                )
+                container = get_container_fn(val["id"])
+            except flywheel.rest.ApiException as e:
+                log.error(e)
+            if local_curator.validate_container(container):
+                local_curator.curate_container(container)
+        # Break loop if there is some unexpected error
+        except Exception as e:
             log.error(e)
-        if local_curator.validate_container(container):
-            local_curator.curate_container(container)
+            break
 
 
 def main(
@@ -82,6 +104,7 @@ def main(
 
 def run_multiproc(curator, root_walker):
     # Main multiprocessing entrypoint
+    lock = multiprocessing.Lock()
     manager = multiprocessing.Manager()
     queue = manager.Queue()
     lock = multiprocessing.Lock()
@@ -92,34 +115,27 @@ def run_multiproc(curator, root_walker):
         reporter.start()
         log.info("Initialized logging process")
     worker_ps = []
+    populator_proc = multiprocessing.Process(
+        target=populator,
+        args=(queue, root_walker, curator),
+        kwargs={"workers": workers},
+    )
+    populator_proc.start()
     for i in range(workers):
+        log.info(f"Initializing worker-{i}")
         proc = multiprocessing.Process(
             target=worker, args=(curator, queue, lock), name=f"worker-{i}"
         )
         proc.start()
         worker_ps.append(proc)
-    for container in root_walker.walk(callback=curator.config.callback):
-        # log.debug(f'Found {container.container_type}, ID: {container.id}')
-
-        val = {
-            "id": container.id,
-            "container_type": container.container_type,
-        }
-        if container.container_type == "file":
-            if hasattr(container, "file_id"):
-                val["id"] = container.file_id
-            val["parent_type"] = container.parent.id
-            val["parent_id"] = container.parent.container_type
-        queue.put(val)
-    for i in range(workers):
-        queue.put(None)
+    populator_proc.join()
     for worker_p in worker_ps:
         worker_p.join()
         log.info(f"Worker {worker_p.name} finished with exit code: {worker_p.exitcode}")
 
     if curator.reporter:
         curator.reporter.write("END")
-    curator.reporter.join()
+        curator.reporter.join()
 
 
 if __name__ == "__main__":  # pragma: no cover
