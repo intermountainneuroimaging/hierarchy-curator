@@ -34,7 +34,7 @@ def caplog_multithreaded():
         logger.addHandler(handlers.QueueHandler(logger_queue))
         yield
         while True:
-            log_record: logging.LogRecord = logger_queue.get()
+            log_record: logging.LogRecord = logger_queue.get_nowait()
             if log_record.message == "END":
                 break
             logger = logging.getLogger(log_record.name)
@@ -65,6 +65,10 @@ def oneoff_curator():
                     "session": "",
                     "acquisition": "",
                 }
+
+            def validate_container(self, container):
+                log.info("In validate_container")
+                return super().validate_container(container)
 
             def curate_project(self, proj):
                 self.data["project"] = proj.label
@@ -123,7 +127,6 @@ def test_curate_main_depth_first(
 
     with (caplog_multithreaded() if multi else nullcontext()):
         log = logging.getLogger()
-        log.setLevel(0)
         main(client, project, curator_path)
         log.info("END")
 

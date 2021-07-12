@@ -19,6 +19,7 @@ log = logging.getLogger(__name__)
 
 
 def populator(queue, root_walker, curator, workers=1):
+    log = logging.getLogger(f"{__name__} - Populator")
     for container in root_walker.walk(callback=curator.config.callback):
         log.debug(f"Found {container.container_type}, ID: {container.id}")
         val = {
@@ -35,10 +36,11 @@ def populator(queue, root_walker, curator, workers=1):
         queue.put(None)
 
 
-def worker(curator, queue, lock):
+def worker(curator, queue, lock, worker_id):
     local_curator = copy.deepcopy(curator)
     local_curator.context._client = local_curator.context.get_client()
     local_curator.lock = lock
+    log = logging.getLogger(f"{__name__} - Worker {worker_id}")
     while True:
         try:
             val = queue.get()
@@ -50,10 +52,12 @@ def worker(curator, queue, lock):
                     local_curator.context.client, f"get_{val['container_type']}"
                 )
                 container = get_container_fn(val["id"])
+                log.debug(f"Found {container.container_type}, ID: {container.id}")
             except flywheel.rest.ApiException as e:
                 log.error(e)
-            if local_curator.validate_container(container):
-                local_curator.curate_container(container)
+            else:
+                if local_curator.validate_container(container):
+                    local_curator.curate_container(container)
         # Break loop if there is some unexpected error
         except Exception as e:
             log.error(e)
@@ -104,7 +108,6 @@ def main(
 
 def run_multiproc(curator, root_walker):
     # Main multiprocessing entrypoint
-    lock = multiprocessing.Lock()
     manager = multiprocessing.Manager()
     queue = manager.Queue()
     lock = multiprocessing.Lock()
@@ -122,9 +125,9 @@ def run_multiproc(curator, root_walker):
     )
     populator_proc.start()
     for i in range(workers):
-        log.info(f"Initializing worker-{i}")
+        log.info(f"Initializing Worker {i}")
         proc = multiprocessing.Process(
-            target=worker, args=(curator, queue, lock), name=f"worker-{i}"
+            target=worker, args=(curator, queue, lock, i), name=str(i)
         )
         proc.start()
         worker_ps.append(proc)
