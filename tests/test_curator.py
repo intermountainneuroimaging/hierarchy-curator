@@ -111,9 +111,8 @@ def oneoff_curator():
 
 @pytest.mark.parametrize("multi", [True, False])
 def test_curate_main_depth_first(
-    multi, fw_project, oneoff_curator, mocker, caplog, caplog_multithreaded
+    multi, fw_project, oneoff_curator, mocker, caplog, caplog_multithreaded, containers
 ):
-    client = None
     project = fw_project(n_subs=2)
     curator_path = ASSETS_DIR / "dummy_curator.py"
 
@@ -123,11 +122,17 @@ def test_curate_main_depth_first(
     )
 
     get_curator_patch.return_value = oneoff_curator(report=True, multi=multi)
-    get_curator_patch.return_value.context = MagicMock()
+    context_mock = MagicMock()
+    for c_type in ["acquisition", "session", "subject", "project"]:
+        getattr(
+            context_mock.client, f"get_{c_type}"
+        ).side_effect = containers.get_container
+    context_mock.client.get_client.return_value = context_mock.client
+    get_curator_patch.return_value.context = context_mock
 
     with (caplog_multithreaded() if multi else nullcontext()):
         log = logging.getLogger()
-        main(client, project, curator_path)
+        main(context_mock, project, curator_path)
         log.info("END")
 
     records = [rec[2] for rec in caplog.record_tuples if rec[0] == "test"]
