@@ -161,23 +161,81 @@ def test_curate_main_depth_first(
         log.info("END")
 
     records = [rec[2] for rec in caplog.record_tuples if rec[0] == "test"]
-    assert all(
-        val in records
-        for val in [
-            "test",
-            "test/sub-1",
-            "test/sub-1/ses-0-sub-1",
-            "test/sub-1/ses-0-sub-1/acq-0-ses-0-sub-1",
-            "test/sub-0",
-            "test/sub-0/ses-0-sub-0",
-            "test/sub-0/ses-0-sub-0/acq-0-ses-0-sub-0",
-        ]
-    )
+    exp = [
+        "test",
+        "test/sub-1",
+        "test/sub-1/ses-0-sub-1",
+        "test/sub-1/ses-0-sub-1/acq-0-ses-0-sub-1",
+        "test/sub-0",
+        "test/sub-0/ses-0-sub-0",
+        "test/sub-0/ses-0-sub-0/acq-0-ses-0-sub-0",
+    ]
+    assert all([val in records for val in exp])
 
 
-@pytest.mark.parametrize("multi", [True, False])
+"""
+    Note: multiprocessing cannot be fully breadth_first.
+
+    For example, if a project with two subjects are run in breadth first,
+    the project will first be curated, and then each subject will be delegated
+    to one of the workers, which will then curate breadth-first below them.
+
+    In traditional (single process) curation, both subjects would first  be
+    curated, but in multiprocessing, it cannot be guarenteed that both subjects
+    will be fully curated before one worker starts on a session.
+
+
+    Becasue of this, running breadth-first in single process will differ
+    slightly from breadth-first in multiprocess, which can be seen in the
+    path order prints below.
+
+
+    In single threaded, both subjects would be curated first, each subject
+    sets the curator's `data['subject']` attribute, so when sessions are
+    curated, the sessions will only see the label of the _last subject
+    to be curated_.  Whereas in multiprocessing, both subjects are curated
+    in different processes, so each session will see the label of _its parent_.
+"""
+
+
+@pytest.mark.parametrize(
+    "multi, exp",
+    [
+        (
+            True,
+            [
+                "test",
+                "test/sub-0",
+                "test/sub-0/ses-0-sub-0",
+                "test/sub-0/ses-0-sub-0/acq-0-ses-0-sub-0",
+                "test/sub-1",
+                "test/sub-1/ses-0-sub-1",
+                "test/sub-1/ses-0-sub-1/acq-0-ses-0-sub-1",
+            ],
+        ),
+        (
+            False,
+            [
+                "test",
+                "test/sub-0",
+                "test/sub-1/ses-0-sub-0",
+                "test/sub-1/ses-0-sub-1/acq-0-ses-0-sub-0",
+                "test/sub-1",
+                "test/sub-1/ses-0-sub-1",
+                "test/sub-1/ses-0-sub-1/acq-0-ses-0-sub-1",
+            ],
+        ),
+    ],
+)
 def test_curate_main_breadth_first(
-    multi, fw_project, oneoff_curator, mocker, caplog, caplog_multithreaded, containers
+    multi,
+    exp,
+    fw_project,
+    oneoff_curator,
+    mocker,
+    caplog,
+    caplog_multithreaded,
+    containers,
 ):
     project = fw_project(n_subs=2)
     curator_path = ASSETS_DIR / "dummy_curator.py"
@@ -204,15 +262,5 @@ def test_curate_main_breadth_first(
         log.info("END")
 
     records = [rec[2] for rec in caplog.record_tuples if rec[0] == "test"]
-    assert all(
-        val in records
-        for val in [
-            "test",
-            "test/sub-1",
-            "test/sub-1/ses-1-0",
-            "test/sub-1/ses-1-0/acq-1-0-0",
-            "test/sub-0",
-            "test/sub-0/ses-0-0",
-            "test/sub-0/ses-0-0/acq-0-0-0",
-        ]
-    )
+    _ = [records.remove(val) for val in exp]
+    assert not len(records)
