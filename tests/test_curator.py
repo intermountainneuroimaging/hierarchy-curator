@@ -28,21 +28,40 @@ def reset_log():
 
 @pytest.fixture()
 def caplog_multithreaded():
+    """Logs from multiple processes don't get propagated back  to the
+    pytest caplog fixture correctly.
+
+    In this context manager, we remove the pytest caplog handlers,
+    and add a QueueHandler (which uses a multiprocessing.Queue so can
+    handle sharing between processes).  Whenever a log message is
+    written in the context manager, it goes to the Queue instead.
+
+    Then when we finish the context manager, we pull everything off
+    the queue and re-emit the log to the proper logger in the
+    MainProcess.
+    """
+
     @contextmanager
     def ctx():
         logger_queue = Queue()
         logger = logging.getLogger()
+        # Save copy of original handlers to restore
         orig_handlers = copy.copy(logger.handlers)
+        # Set level to 0 to capture every log.
         logger.setLevel(0)
+        # Add QueueHandler
         logger.addHandler(handlers.QueueHandler(logger_queue))
+        # Remove pytest LogCaptureHandlers
         logger.handlers = [
             handler
             for handler in logger.handlers
             if not isinstance(handler, _pytest.logging.LogCaptureHandler)
         ]
         yield
+        # Restore original handlers
         logger = logging.getLogger()
         logger.handlers = orig_handlers
+        # Re-emit logs.
         while True:
             log_record: logging.LogRecord = logger_queue.get_nowait()
             if log_record.message == "END":
