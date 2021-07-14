@@ -1,3 +1,4 @@
+import copy
 import logging
 import sys
 from contextlib import contextmanager, nullcontext
@@ -6,6 +7,7 @@ from multiprocessing import Queue
 from pathlib import Path
 from unittest.mock import MagicMock
 
+import _pytest
 import pytest
 from flywheel_gear_toolkit.utils.curator import HierarchyCurator
 
@@ -30,9 +32,17 @@ def caplog_multithreaded():
     def ctx():
         logger_queue = Queue()
         logger = logging.getLogger()
+        orig_handlers = copy.copy(logger.handlers)
         logger.setLevel(0)
         logger.addHandler(handlers.QueueHandler(logger_queue))
+        logger.handlers = [
+            handler
+            for handler in logger.handlers
+            if not isinstance(handler, _pytest.logging.LogCaptureHandler)
+        ]
         yield
+        logger = logging.getLogger()
+        logger.handlers = orig_handlers
         while True:
             log_record: logging.LogRecord = logger_queue.get_nowait()
             if log_record.message == "END":
@@ -148,10 +158,9 @@ def test_curate_main_depth_first(
 
 @pytest.mark.parametrize("multi", [True, False])
 def test_curate_main_breadth_first(
-    multi, fw_project, oneoff_curator, mocker, caplog, caplog_multithreaded
+    multi, fw_project, oneoff_curator, mocker, caplog, caplog_multithreaded, containers
 ):
-    client = None
-    project = fw_project(n_subjects=2)
+    project = fw_project(n_subs=2)
     curator_path = ASSETS_DIR / "dummy_curator.py"
 
     get_curator_patch = mocker.patch("fw_gear_hierarchy_curator.curate.c.get_curator")
@@ -162,35 +171,29 @@ def test_curate_main_breadth_first(
     get_curator_patch.return_value = oneoff_curator(report=True, multi=multi)
     get_curator_patch.return_value.config.depth_first = False
 
+    context_mock = MagicMock()
+    for c_type in ["acquisition", "session", "subject", "project"]:
+        getattr(
+            context_mock.client, f"get_{c_type}"
+        ).side_effect = containers.get_container
+    context_mock.client.get_client.return_value = context_mock.client
+    get_curator_patch.return_value.context = context_mock
+
     with (caplog_multithreaded() if multi else nullcontext()):
         log = logging.getLogger()
-        main(client, project, curator_path)
+        main(context_mock, project, curator_path)
         log.info("END")
 
     records = [rec[2] for rec in caplog.record_tuples if rec[0] == "test"]
     assert all(
         val in records
         for val in [
-            "Mock",
-            "Mock/sub-1",
-            "Mock/sub-1/ses-1-0",
-            "Mock/sub-1/ses-1-0/acq-1-0-0",
-            "Mock/sub-0",
-            "Mock/sub-0/ses-0-0",
-            "Mock/sub-0/ses-0-0/acq-0-0-0",
+            "test",
+            "test/sub-1",
+            "test/sub-1/ses-1-0",
+            "test/sub-1/ses-1-0/acq-1-0-0",
+            "test/sub-0",
+            "test/sub-0/ses-0-0",
+            "test/sub-0/ses-0-0/acq-0-0-0",
         ]
     )
-
-
-def test_curate_main_with_a_dummy_curator(fw_project):
-    client = None
-    project = fw_project(n_subjects=1)
-    curator_path = ASSETS_DIR / "dummy_curator.py"
-    main(client, project, curator_path)
-    subject = project.subjects()[0]
-    session = subject.sessions()[0]
-    acquisition = session.acquisitions()[0]
-    assert project.reload().label == "Curated"
-    assert subject.reload().label == "Curated"
-    assert session.reload().label == "Curated"
-    assert acquisition.reload().label == "Curated"
