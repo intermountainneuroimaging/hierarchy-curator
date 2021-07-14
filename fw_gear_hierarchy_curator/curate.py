@@ -125,6 +125,7 @@ def run_multiproc(curator, root_walker):
         worker_p.join()
         log.info(f"Worker {worker_p.name} finished with exit code: {worker_p.exitcode}")
 
+    # breakpoint()
     if curator.reporter:
         curator.reporter.write("END")
         curator.reporter.join()
