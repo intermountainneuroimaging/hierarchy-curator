@@ -26,7 +26,7 @@ log = logging.getLogger(__name__)
 
 
 def worker(curator, work, lock, worker_id):
-    #    breakpoint()
+    # breakpoint()
     try:
         local_curator = copy.deepcopy(curator)
         local_curator.context._client = local_curator.context.get_client()
@@ -45,7 +45,7 @@ def worker(curator, work, lock, worker_id):
             ]
             w = make_walker(containers.pop(0), local_curator)
             if work:
-                w.extend(containers)
+                w.add(containers)
             for cont in w.walk(callback=local_curator.config.callback):
                 if local_curator.validate_container(cont):
                     local_curator.curate_container(cont)
@@ -74,7 +74,7 @@ def main(
     root_walker = walker.Walker(
         parent,
         depth_first=curator.config.depth_first,
-        reload=(curator.config.reload if not curator.config.multi else False),
+        reload=curator.config.reload,
         stop_level=curator.config.stop_level,
     )
     # Initialize reporter if in config
@@ -97,7 +97,6 @@ def main(
 
 def run_multiproc(curator, root_walker):
     # Main multiprocessing entrypoint
-    manager = multiprocessing.Manager()
     lock = multiprocessing.Lock()
     workers = curator.config.workers
     if curator.reporter:
