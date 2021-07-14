@@ -14,54 +14,43 @@ from flywheel_gear_toolkit import GearToolkitContext
 from flywheel_gear_toolkit.utils import curator as c
 from flywheel_gear_toolkit.utils import datatypes, reporters, walker
 
+from .utils import (
+    container_from_pickleable_dict,
+    container_to_pickleable_dict,
+    handle_container,
+    make_walker,
+)
+
 sys.path.insert(0, str(Path(__file__).parents[1]))
 log = logging.getLogger(__name__)
 
 
-def populator(queue, root_walker, curator, workers=1):
-    log = logging.getLogger(f"{__name__} - Populator")
-    for container in root_walker.walk(callback=curator.config.callback):
-        log.debug(f"Found {container.container_type}, ID: {container.id}")
-        val = {
-            "id": container.id,
-            "container_type": container.container_type,
-        }
-        if container.container_type == "file":
-            if hasattr(container, "file_id"):
-                val["id"] = container.file_id
-            val["parent_type"] = container.parent.id
-            val["parent_id"] = container.parent.container_type
-        queue.put(val)
-    for i in range(workers):
-        queue.put(None)
-
-
-def worker(curator, queue, lock, worker_id):
-    local_curator = copy.deepcopy(curator)
-    local_curator.context._client = local_curator.context.get_client()
-    local_curator.lock = lock
-    log = logging.getLogger(f"{__name__} - Worker {worker_id}")
-    while True:
-        try:
-            val = queue.get()
-            if val is None:
-                log.debug("Recieved termination signal")
-                break
-            try:
-                get_container_fn = getattr(
-                    local_curator.context.client, f"get_{val['container_type']}"
-                )
-                container = get_container_fn(val["id"])
-                log.debug(f"Found {container.container_type}, ID: {container.id}")
-            except flywheel.rest.ApiException as e:
-                log.error(e)
-            else:
-                if local_curator.validate_container(container):
-                    local_curator.curate_container(container)
-        # Break loop if there is some unexpected error
-        except Exception as e:
-            log.error(e)
-            break
+def worker(curator, work, lock, worker_id):
+    #    breakpoint()
+    try:
+        local_curator = copy.deepcopy(curator)
+        local_curator.context._client = local_curator.context.get_client()
+        local_curator.lock = lock
+        log = logging.getLogger(f"{__name__} - Worker {worker_id}")
+        if local_curator.config.depth_first:
+            for child in work:
+                child_cont = container_from_pickleable_dict(child, local_curator)
+                w = make_walker(child_cont, local_curator)
+                for cont in w.walk(callback=local_curator.config.callback):
+                    if local_curator.validate_container(cont):
+                        local_curator.curate_container(cont)
+        else:
+            containers = [
+                container_from_pickleable_dict(w, local_curator) for w in work
+            ]
+            w = make_walker(containers.pop(0), local_curator)
+            if work:
+                w.extend(containers)
+            for cont in w.walk(callback=local_curator.config.callback):
+                if local_curator.validate_container(cont):
+                    local_curator.curate_container(cont)
+    except Exception as e:  # pylint: disable=broad-except
+        log.critical("Could not finish curation, worker errored early", exc_info=True)
 
 
 def main(
@@ -109,29 +98,30 @@ def main(
 def run_multiproc(curator, root_walker):
     # Main multiprocessing entrypoint
     manager = multiprocessing.Manager()
-    queue = manager.Queue()
     lock = multiprocessing.Lock()
     workers = curator.config.workers
     if curator.reporter:
         # Logger process
         reporter = curator.reporter
         reporter.start()
-        log.info("Initialized logging process")
+        log.info("Initialized reporting process")
+    distributions = [[] for _ in range(workers)]
+    # Curate first container
+    parent_cont = root_walker.next(callback=curator.config.callback)
+    parent_cont = container_to_pickleable_dict(parent_cont)
+    handle_container(curator, parent_cont)
+    # Populate assignments
+    for i, child_cont in enumerate(root_walker.deque):
+        distributions[i % workers].append(container_to_pickleable_dict(child_cont))
     worker_ps = []
-    populator_proc = multiprocessing.Process(
-        target=populator,
-        args=(queue, root_walker, curator),
-        kwargs={"workers": workers},
-    )
-    populator_proc.start()
     for i in range(workers):
+        # Give each worker its assignments
         log.info(f"Initializing Worker {i}")
         proc = multiprocessing.Process(
-            target=worker, args=(curator, queue, lock, i), name=str(i)
+            target=worker, args=(curator, distributions[i], lock, i), name=str(i)
         )
         proc.start()
         worker_ps.append(proc)
-    populator_proc.join()
     for worker_p in worker_ps:
         worker_p.join()
         log.info(f"Worker {worker_p.name} finished with exit code: {worker_p.exitcode}")

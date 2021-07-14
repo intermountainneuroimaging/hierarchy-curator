@@ -29,12 +29,13 @@ license = "MIT"
     isort = "^5.6.4"
     rpdb = "^0.1.6"
         fw-gear-testing = {path = "../utils/testing"}
+    remote-pdb = "^2.1.0"
 
 
 [tool.pytest.ini_options]
     minversion = "6.0"
     addopts = [
-      "--cov=flywheel_hierarchy_curator",
+      "--cov=fw_gear_hierarchy_curator",
       "--cov-report=html",
     ]
     testpaths = [

@@ -66,10 +66,6 @@ def oneoff_curator():
                     "acquisition": "",
                 }
 
-            def validate_container(self, container):
-                log.info("In validate_container")
-                return super().validate_container(container)
-
             def curate_project(self, proj):
                 self.data["project"] = proj.label
                 path = self.data["project"]
@@ -139,13 +135,13 @@ def test_curate_main_depth_first(
     assert all(
         val in records
         for val in [
-            "Mock",
-            "Mock/sub-1",
-            "Mock/sub-1/ses-1-0",
-            "Mock/sub-1/ses-1-0/acq-1-0-0",
-            "Mock/sub-0",
-            "Mock/sub-0/ses-0-0",
-            "Mock/sub-0/ses-0-0/acq-0-0-0",
+            "test",
+            "test/sub-1",
+            "test/sub-1/ses-0-sub-1",
+            "test/sub-1/ses-0-sub-1/acq-0-ses-0-sub-1",
+            "test/sub-0",
+            "test/sub-0/ses-0-sub-0",
+            "test/sub-0/ses-0-sub-0/acq-0-ses-0-sub-0",
         ]
     )
 

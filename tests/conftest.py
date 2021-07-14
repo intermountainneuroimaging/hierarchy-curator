@@ -4,4 +4,4 @@ import flywheel
 import fw_gear_testing
 import pytest
 
-pytest_plugins = ("fw_gear_testing",)
+pytest_plugins = ("fw_gear_testing", "pudb")
