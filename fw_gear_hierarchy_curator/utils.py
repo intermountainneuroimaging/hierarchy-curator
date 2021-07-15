@@ -23,8 +23,8 @@ def container_to_pickleable_dict(container: datatypes.Container) -> t.Dict[str, 
     if container.container_type == "file":
         if hasattr(container, "file_id"):
             val["id"] = container.file_id
-        val["parent_type"] = container.parent.id
-        val["parent_id"] = container.parent.container_type
+        val["parent_type"] = container.parent.container_type
+        val["parent_id"] = container.parent.id
     return val
 
 
@@ -60,7 +60,7 @@ def make_walker(container: datatypes.Container, curator: c.HierarchyCurator):
     w = walker.Walker(
         container,
         depth_first=curator.config.depth_first,
-        reload=(curator.config.reload if not curator.config.multi else False),
+        reload=curator.config.reload,
         stop_level=curator.config.stop_level,
     )
     return w
