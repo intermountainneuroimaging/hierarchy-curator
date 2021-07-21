@@ -19,7 +19,7 @@ class Curator(HierarchyCurator):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.reporter = None
-        
+
         log.info("Initiating reporter")
         self.reporter = AggregatedReporter(
             output_path=(Path(self.context.output_dir) / "out.csv")

@@ -1,13 +1,15 @@
 import copy
 import logging
+import pickle
 import sys
 from contextlib import contextmanager, nullcontext
 from logging import handlers
 from multiprocessing import Queue
 from pathlib import Path
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, Mock
 
 import _pytest
+import dill
 import pytest
 from flywheel_gear_toolkit.utils.curator import HierarchyCurator
 
@@ -77,61 +79,100 @@ def caplog_multithreaded():
     return ctx
 
 
+log = logging.getLogger("test")
+
+
+class reporter(HierarchyCurator):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.config.report = kwargs.get("report", True)
+        self.config.multi = kwargs.get("multi", True)
+        self.config.workers = 2
+        self.data = {
+            "project": "",
+            "subject": "",
+            "session": "",
+            "acquisition": "",
+        }
+
+    def curate_project(self, proj):
+        self.data["project"] = proj.label
+        path = self.data["project"]
+        log.info(path)
+
+    def curate_subject(self, sub):
+        self.data["subject"] = sub.label
+        path = f"{self.data['project']}/{self.data['subject']}"
+        log.info(path)
+
+    def curate_session(self, ses):
+        self.data["session"] = ses.label
+        path = (
+            self.data["project"]
+            + "/"
+            + self.data["subject"]
+            + "/"
+            + self.data["session"]
+        )
+        log.info(path)
+
+    def curate_acquisition(self, acq):
+        self.data["acquisition"] = acq.label
+        path = (
+            self.data["project"]
+            + "/"
+            + self.data["subject"]
+            + "/"
+            + self.data["session"]
+            + "/"
+            + self.data["acquisition"]
+        )
+        log.info(path)
+
+
 @pytest.fixture
-def oneoff_curator():
+def oneoff_curator(containers):
     def _gen(report=True, multi=True):
-        log = logging.getLogger("test")
 
-        class reporter(HierarchyCurator):
-            def __init__(self, **kwargs):
-                super().__init__(**kwargs)
-                self.config.report = report
-                self.config.multi = multi
-                self.config.workers = 2
-                self.data = {
-                    "project": "",
-                    "subject": "",
-                    "session": "",
-                    "acquisition": "",
-                }
-
-            def curate_project(self, proj):
-                self.data["project"] = proj.label
-                path = self.data["project"]
-                log.info(path)
-
-            def curate_subject(self, sub):
-                self.data["subject"] = sub.label
-                path = f"{self.data['project']}/{self.data['subject']}"
-                log.info(path)
-
-            def curate_session(self, ses):
-                self.data["session"] = ses.label
-                path = (
-                    self.data["project"]
-                    + "/"
-                    + self.data["subject"]
-                    + "/"
-                    + self.data["session"]
-                )
-                log.info(path)
-
-            def curate_acquisition(self, acq):
-                self.data["acquisition"] = acq.label
-                path = (
-                    self.data["project"]
-                    + "/"
-                    + self.data["subject"]
-                    + "/"
-                    + self.data["session"]
-                    + "/"
-                    + self.data["acquisition"]
-                )
-                log.info(path)
-
-        return reporter()
+        my_reporter = reporter(report=report, multi=multi)
+        client_kwargs = {}
+        for c_type in ["acquisition", "session", "subject", "project"]:
+            client_kwargs[f"get_{c_type}"] = PickleableMock(
+                side_effect=containers.get_container
+            )
+        client_mock = PickleableMock(**client_kwargs)
+        context_mock = PickleableMock(client=client_mock)
+        my_reporter.context = context_mock
+        return my_reporter
 
     return _gen
+
+
+blank_dict_keys = MagicMock().__dict__.keys()
+# See https://github.com/testing-cabal/mock/issues/139#issuecomment-122128815
+# Needed to allow for pickling
+class PickleableMock(MagicMock):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self._to_save = kwargs
+
+    def __setstate__(self, state):
+        self.__dict__.update(state)
+
+    def __reduce__(self):
+        if "side_effect" in self._to_save:
+            self._to_save["_mock_side_effect"] = self._to_save.pop("side_effect")
+        return (PickleableMock, (), self._to_save)
+
+
+def test_pickle_curator(oneoff_curator):
+    curator = oneoff_curator()
+    curator.context = PickleableMock()
+    curator.context.client = PickleableMock()
+    out = dill.dumps(curator)
+    assert out
+    out = pickle.dumps(curator)
+    assert out
 
 
 @pytest.mark.parametrize("multi", [True, False])
@@ -145,15 +186,10 @@ def test_curate_main_depth_first(
     reporter_mock = mocker.patch(
         "fw_gear_hierarchy_curator.curate.reporters.AggregatedReporter"
     )
+    reporter_mock.return_value = PickleableMock()
 
     get_curator_patch.return_value = oneoff_curator(report=True, multi=multi)
     context_mock = MagicMock()
-    for c_type in ["acquisition", "session", "subject", "project"]:
-        getattr(
-            context_mock.client, f"get_{c_type}"
-        ).side_effect = containers.get_container
-    context_mock.client.get_client.return_value = context_mock.client
-    get_curator_patch.return_value.context = context_mock
 
     with (caplog_multithreaded() if multi else nullcontext()):
         log = logging.getLogger()

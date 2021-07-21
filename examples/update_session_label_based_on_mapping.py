@@ -45,7 +45,7 @@ class Curator(HierarchyCurator):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         # Stop at session level since we don't need to curate anything under that.
-        self.config.stop_level = 'session'
+        self.config.stop_level = "session"
 
         self.reporter = None
         if self.write_report:

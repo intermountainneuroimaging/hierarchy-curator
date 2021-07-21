@@ -17,7 +17,7 @@ class Curator(HierarchyCurator):
     def __init__(self):
         super().__init__(**kwargs)
         # Stop at project level since we only care about curating project
-        self.config.stop_level = 'project'
+        self.config.stop_level = "project"
 
     def curate_project(self, project: flywheel.Project):
         if self.additional_input_one:

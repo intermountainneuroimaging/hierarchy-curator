@@ -28,8 +28,9 @@ license = "MIT"
     black = "^20.8b1"
     isort = "^5.6.4"
     rpdb = "^0.1.6"
-        fw-gear-testing = {path = "../utils/testing"}
     remote-pdb = "^2.1.0"
+    fw-gear-testing = "^0.2.4"
+    dill = "^0.3.4"
 
 
 [tool.pytest.ini_options]
