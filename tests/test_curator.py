@@ -1,183 +1,87 @@
-import logging
+from unittest.mock import MagicMock
+
 import pytest
-import sys
-from contextlib import contextmanager, nullcontext
-from logging import handlers
-from multiprocessing import Queue
-from pathlib import Path
 
-from flywheel_gear_toolkit.utils.curator import HierarchyCurator
-from fw_gear_hierarchy_curator.curate import main
+from fw_gear_hierarchy_curator.curate import main, run_multiproc, worker
 
-ASSETS_DIR = Path(__file__).parent / "assets"
 
-@pytest.fixture(scope='session', autouse=True)
-def reset_log():
-    logging.basicConfig(
-        stream=sys.stdout,
-        format='%(levelname)-8s [%(filename)s:%(lineno)d] %(message)s',
-        level=logging.DEBUG
+def test_worker_depth_first(mocker):
+    curator = MagicMock()
+    copy_mock = mocker.patch("fw_gear_hierarchy_curator.curate.copy")
+    copy_mock.deepcopy.return_value = curator
+    pickle_mock = mocker.patch(
+        "fw_gear_hierarchy_curator.curate.container_from_pickleable_dict"
     )
-    log = logging.getLogger()
+    walker_mock = mocker.patch("fw_gear_hierarchy_curator.curate.make_walker")
+    walker_mock.return_value.walk.return_value = ["test"]
+    work = [
+        {"container_type": "test", "id": "test"},
+        {"container_type": "test1", "id": "test1"},
+    ]
+    # Depth First
+    curator.config.depth_first = True
+    lock_mock = MagicMock()
+    worker(curator, work, lock_mock, 0)
+
+    # Breadth First
+    curator.config.depth_first = False
+    worker(curator, work, lock_mock, 0)
+
+    assert curator.context.get_client.call_count == 2
+    assert [call[0] for call in pickle_mock.call_args_list] == [
+        (work[0], curator),
+        (work[1], curator),
+        (work[0], curator),
+        (work[1], curator),
+    ]
+    assert walker_mock.call_count == 3
+    assert curator.validate_container.call_count == 3
+    assert curator.curate_container.call_count == 3
 
 
-@pytest.fixture()
-def caplog_multithreaded():
-    @contextmanager
-    def ctx():
-        logger_queue = Queue()
-        logger = logging.getLogger()
-        logger.addHandler(handlers.QueueHandler(logger_queue))
-        yield
-        while True:
-            log_record: logging.LogRecord = logger_queue.get()
-            if log_record.message == 'END':
-                break
-            logger = logging.getLogger(log_record.name)
-            logger._log(
-                level=log_record.levelno,
-                msg=log_record.message,
-                args=log_record.args,
-                exc_info=log_record.exc_info,
-            )
-    return ctx
-
-@pytest.fixture
-def oneoff_curator():
-
-    log = logging.getLogger('test')
-
-    def _gen(report=True, multi=True):
-
-        class reporter(HierarchyCurator):
-
-            def __init__(self, **kwargs):
-                super().__init__(**kwargs)
-                self.config.report = report
-                self.config.multi = multi
-                self.config.workers=2
-                self.data = {
-                    'project': "",
-                    'subject': "",
-                    'session': "",
-                    'acquisition': "",
-                }
-
-            def curate_project(self, proj):
-                self.data['project'] = proj.label
-                path = self.data['project']
-                log.info(path)
-
-            def curate_subject(self, sub):
-                self.data['subject'] = sub.label
-                path = f"{self.data['project']}/{self.data['subject']}"
-                log.info(path)
-
-            def curate_session(self, ses):
-                self.data['session'] = ses.label
-                path = (
-                    self.data['project'] + "/" + 
-                    self.data['subject'] + "/" + 
-                    self.data['session']
-                )
-                log.info(path)
-
-            def curate_acquisition(self, acq):
-                self.data['acquisition'] = acq.label
-                path = (
-                    self.data['project'] + "/" +
-                    self.data['subject'] + "/" +
-                    self.data['session'] + "/" +
-                    self.data['acquisition']
-                )
-                log.info(path)
-
-        return reporter()
-
-    return _gen
-
-@pytest.mark.parametrize('multi',[True, False])
-def test_curate_main_depth_first(
-    multi,
-    fw_project,
-    oneoff_curator,
-    mocker,
-    caplog,
-    caplog_multithreaded
-):
-    client = None
-    project = fw_project(n_subjects=2)
-    curator_path = ASSETS_DIR / "dummy_curator.py"
-
-    get_curator_patch = mocker.patch(
-        'fw_gear_hierarchy_curator.curate.c.get_curator'
+def test_run_multiproc(mocker):
+    mocker.patch("fw_gear_hierarchy_curator.curate.multiprocessing")
+    mocker.patch("fw_gear_hierarchy_curator.curate.handle_container")
+    pickle_mock = mocker.patch(
+        "fw_gear_hierarchy_curator.curate.container_to_pickleable_dict"
     )
-    reporter_mock = mocker.patch(
-        'fw_gear_hierarchy_curator.curate.reporters.AggregatedReporter'
+    walker = MagicMock()
+    walker.deque = [
+        {"container_type": "test", "id": "test"},
+        {"container_type": "test1", "id": "test1"},
+    ]
+    curator = MagicMock()
+    curator.config.workers = 2
+
+    run_multiproc(curator, walker)
+
+    curator.reporter.start.assert_called_once()
+    assert pickle_mock.call_count == 3
+
+
+def test_main(mocker):
+    get_curator = mocker.patch("fw_gear_hierarchy_curator.curate.c.get_curator")
+    curator_mock = MagicMock()
+    curator_mock.config.depth_first = True
+    curator_mock.config.reload = True
+    curator_mock.config.stop_level = "session"
+    curator_mock.config.multi = False
+    get_curator.return_value = curator_mock
+    walker = mocker.patch("fw_gear_hierarchy_curator.curate.walker.Walker")
+    walker.return_value.walk.return_value = ["test"]
+    reporter = mocker.patch(
+        "fw_gear_hierarchy_curator.curate.reporters.AggregatedReporter"
     )
+    ctx = MagicMock()
+    parent = MagicMock()
+    curator_path = ""
+    main(ctx, parent, curator_path)
 
-    get_curator_patch.return_value = oneoff_curator(report=True, multi=multi)
-
-    with (caplog_multithreaded() if multi else nullcontext()):
-        log = logging.getLogger()
-        main(client, project, curator_path)
-        log.info('END')
-
-    records = [rec[2] for rec in caplog.record_tuples if rec[0] == 'test']
-    assert all(val in records for val in [
-        'Mock',
-        'Mock/sub-1', 'Mock/sub-1/ses-1-0', 'Mock/sub-1/ses-1-0/acq-1-0-0',
-        'Mock/sub-0', 'Mock/sub-0/ses-0-0', 'Mock/sub-0/ses-0-0/acq-0-0-0'
-    ])
-
-
-@pytest.mark.parametrize('multi',[True, False])
-def test_curate_main_breadth_first(
-    multi,
-    fw_project,
-    oneoff_curator,
-    mocker,
-    caplog,
-    caplog_multithreaded
-):
-    client = None
-    project = fw_project(n_subjects=2)
-    curator_path = ASSETS_DIR / "dummy_curator.py"
-
-    get_curator_patch = mocker.patch(
-        'fw_gear_hierarchy_curator.curate.c.get_curator'
+    get_curator.assert_called_once()
+    walker.assert_called_once_with(
+        parent, depth_first=True, reload=True, stop_level="session"
     )
-    reporter_mock = mocker.patch(
-        'fw_gear_hierarchy_curator.curate.reporters.AggregatedReporter'
-    )
-
-    get_curator_patch.return_value = oneoff_curator(report=True, multi=multi)
-    get_curator_patch.return_value.config.depth_first = False
-
-    with (caplog_multithreaded() if multi else nullcontext()):
-        log = logging.getLogger()
-        main(client, project, curator_path)
-        log.info('END')
-
-    records = [rec[2] for rec in caplog.record_tuples if rec[0] == 'test']
-    assert all(val in records for val in [
-        'Mock',
-        'Mock/sub-1', 'Mock/sub-1/ses-1-0', 'Mock/sub-1/ses-1-0/acq-1-0-0',
-        'Mock/sub-0', 'Mock/sub-0/ses-0-0', 'Mock/sub-0/ses-0-0/acq-0-0-0'
-    ])
- 
-
-
-def test_curate_main_with_a_dummy_curator(fw_project):
-    client = None
-    project = fw_project(n_subjects=1)
-    curator_path = ASSETS_DIR / "dummy_curator.py"
-    main(client, project, curator_path)
-    subject = project.subjects()[0]
-    session = subject.sessions()[0]
-    acquisition = session.acquisitions()[0]
-    assert project.reload().label == "Curated"
-    assert subject.reload().label == "Curated"
-    assert session.reload().label == "Curated"
-    assert acquisition.reload().label == "Curated"
-
+    walker.return_value.walk.assert_called_once()
+    reporter.assert_called_once()
+    curator_mock.validate_container.assert_called_once()
+    curator_mock.curate_container.assert_called_once()

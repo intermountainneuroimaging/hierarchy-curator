@@ -10,15 +10,16 @@ from pathlib import Path
 import flywheel
 from flywheel_gear_toolkit.utils.curator import HierarchyCurator
 
-
 log = logging.getLogger("print_container_path")
 log.setLevel("DEBUG")
 
 
 def print_path(levels):
-    log.info('/'.join(levels))
+    log.info("/".join(levels))
 
-SPECIAL_LABEL='my_special_label'
+
+SPECIAL_LABEL = "my_special_label"
+
 
 class Curator(HierarchyCurator):
     def __init__(self, **kwargs):
@@ -43,4 +44,11 @@ class Curator(HierarchyCurator):
         print_path([self.project_label, self.subject_label, self.session_label])
 
     def curate_acquisition(self, acquisition: flywheel.Acquisition):
-        print_path([self.project_label, self.subject_label, self.session_label, acquisition.label])
+        print_path(
+            [
+                self.project_label,
+                self.subject_label,
+                self.session_label,
+                acquisition.label,
+            ]
+        )

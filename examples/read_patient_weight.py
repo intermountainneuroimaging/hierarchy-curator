@@ -1,10 +1,11 @@
 import json
 import logging
+import os
 import zipfile
 
 import flywheel
-import os
 import pydicom
+
 imoprt tempfile
 from flywheel_gear_toolkit import GearToolkitContext
 from flywheel_gear_toolkit.utils import curator
