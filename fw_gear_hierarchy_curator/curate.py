@@ -56,7 +56,7 @@ def handle_breadth_first(
 ) -> None:
     """Add all containers to one walker and walk in breadth-first."""
     w = make_walker(containers.pop(0), local_curator)
-    if work:
+    if containers:
         w.add(containers)
     for cont in w.walk(callback=local_curator.config.callback):
         log.debug(f"Found {cont.container_type}, ID: {cont.id}")
