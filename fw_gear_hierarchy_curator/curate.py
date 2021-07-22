@@ -10,6 +10,7 @@ from contextlib import contextmanager
 from pathlib import Path
 
 import flywheel
+import multiprocessing_logging
 from flywheel_gear_toolkit import GearToolkitContext
 from flywheel_gear_toolkit.utils import curator as c
 from flywheel_gear_toolkit.utils import datatypes, reporters, walker
@@ -22,11 +23,12 @@ from .utils import (
 )
 
 sys.path.insert(0, str(Path(__file__).parents[1]))
+multiprocessing_logging.install_mp_handler()
 log = logging.getLogger(__name__)
 
 
 def worker(curator, work, lock, worker_id):
-    # breakpoint()
+    breakpoint()
     try:
         local_curator = copy.deepcopy(curator)
         local_curator.context._client = local_curator.context.get_client()

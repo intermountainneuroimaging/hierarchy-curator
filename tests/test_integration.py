@@ -285,12 +285,6 @@ def test_curate_main_breadth_first(
     get_curator_patch.return_value.config.depth_first = False
 
     context_mock = MagicMock()
-    for c_type in ["acquisition", "session", "subject", "project"]:
-        getattr(
-            context_mock.client, f"get_{c_type}"
-        ).side_effect = containers.get_container
-    context_mock.client.get_client.return_value = context_mock.client
-    get_curator_patch.return_value.context = context_mock
 
     with (caplog_multithreaded() if multi else nullcontext()):
         log = logging.getLogger()
