@@ -1,11 +1,13 @@
 """Hierarchy curator main interface."""
 import argparse
 import copy
+import functools
 import logging
 import math
 import multiprocessing
 import os
 import sys
+import typing as t
 from contextlib import contextmanager
 from pathlib import Path
 
@@ -18,7 +20,7 @@ from flywheel_gear_toolkit.utils import datatypes, reporters, walker
 from .utils import (
     container_from_pickleable_dict,
     container_to_pickleable_dict,
-    handle_container,
+    handle_work,
     make_walker,
 )
 
@@ -27,30 +29,70 @@ multiprocessing_logging.install_mp_handler()
 log = logging.getLogger(__name__)
 
 
-def worker(curator, work, lock, worker_id):
-    breakpoint()
+def handle_depth_first(
+    log: logging.Logger,
+    local_curator: c.HierarchyCurator,
+    containers: t.List[datatypes.Container],
+) -> None:
+    """For each container create a walker and walk if it has children.
+    Otherwise, just curate.
+    """
+    for container in containers:
+        if container.container_type in ["analysis", "file"]:
+            if local_curator.validate_container(container):
+                local_curator.curate_container(container)
+        else:
+            w = make_walker(container, local_curator)
+            for cont in w.walk(callback=local_curator.config.callback):
+                log.debug(f"Found {cont.container_type}, ID: {cont.id}")
+                if local_curator.validate_container(cont):
+                    local_curator.curate_container(cont)
+
+
+def handle_breadth_first(
+    log: logging.Logger,
+    local_curator: c.HierarchyCurator,
+    containers: t.List[datatypes.Container],
+) -> None:
+    """Add all containers to one walker and walk in breadth-first."""
+    w = make_walker(containers.pop(0), local_curator)
+    if work:
+        w.add(containers)
+    for cont in w.walk(callback=local_curator.config.callback):
+        log.debug(f"Found {cont.container_type}, ID: {cont.id}")
+        if local_curator.validate_container(cont):
+            local_curator.curate_container(cont)
+
+
+def worker(
+    curator: c.HierarchyCurator,
+    work: t.List[t.Dict[str, str]],
+    lock: multiprocessing.Lock,
+    worker_id: int,
+) -> None:
+    """Target function for Process.
+
+    Args:
+        curator: Curator object
+        work: List of dictionaries representing containers to process.
+        lock: multiprocessing lock to pass into container.
+        worker_id: id of worker.
+    """
+    log = logging.getLogger(f"{__name__} - Worker {worker_id}")
     try:
+        # Use custom __deepcopy__ hook to copy relevant data, remove
+        # unpickleable attributes, and re-populate.
         local_curator = copy.deepcopy(curator)
         local_curator.context._client = local_curator.context.get_client()
         local_curator.lock = lock
-        log = logging.getLogger(f"{__name__} - Worker {worker_id}")
         if local_curator.config.depth_first:
-            for child in work:
-                child_cont = container_from_pickleable_dict(child, local_curator)
-                w = make_walker(child_cont, local_curator)
-                for cont in w.walk(callback=local_curator.config.callback):
-                    if local_curator.validate_container(cont):
-                        local_curator.curate_container(cont)
+            # Pass work, curator, and handle_depth_first into handle_work
+            handle_work(work, local_curator, functools.partial(handle_depth_first, log))
         else:
-            containers = [
-                container_from_pickleable_dict(w, local_curator) for w in work
-            ]
-            w = make_walker(containers.pop(0), local_curator)
-            if work:
-                w.add(containers)
-            for cont in w.walk(callback=local_curator.config.callback):
-                if local_curator.validate_container(cont):
-                    local_curator.curate_container(cont)
+            # Pass work, curator, and handle_breadth_first into handle_work
+            handle_work(
+                work, local_curator, functools.partial(handle_breadth_first, log)
+            )
     except Exception as e:  # pylint: disable=broad-except
         log.critical("Could not finish curation, worker errored early", exc_info=True)
 
@@ -70,9 +112,14 @@ def main(
         kwargs (dict): Dictionary of attributes/value to set on curator.
     """
     # Initialize curator
+    log.info(f"Getting curator from {curator_path}")
     curator = c.get_curator(context, curator_path, **kwargs)
     log.info("Curator config: " + str(curator.config))
     # Initialize walker from root container
+    log.info(
+        "Initializing walker over hierarchy starting at "
+        f"{parent.container_type} {parent.label or parent.code}"
+    )
     root_walker = walker.Walker(
         parent,
         depth_first=curator.config.depth_first,
@@ -89,6 +136,7 @@ def main(
     if curator.config.multi:
         run_multiproc(curator, root_walker)
     else:
+        log.info("Running in single-process mode")
         for container in root_walker.walk(callback=curator.config.callback):
             try:
                 if curator.validate_container(container):
@@ -97,8 +145,18 @@ def main(
                 log.error("Uncaught Exception", exc_info=True)
 
 
+# See docs/multiprocessing.md for details on why this implementation was chosen
 def run_multiproc(curator, root_walker):
+    """Run hierarchy curator in parallel.
+
+    1. Set up
+    2. Curate root container
+    3. Divide children of root container evenly among workers
+    4. Run each worker process
+    5. Clean up
+    """
     # Main multiprocessing entrypoint
+    log.info(f"Running in multi-process mode with {curator.config.workers} workers")
     lock = multiprocessing.Lock()
     workers = curator.config.workers
     if curator.reporter:
@@ -108,9 +166,11 @@ def run_multiproc(curator, root_walker):
         log.info("Initialized reporting process")
     distributions = [[] for _ in range(workers)]
     # Curate first container
+    log.debug("Curating root container")
     parent_cont = root_walker.next(callback=curator.config.callback)
-    parent_cont = container_to_pickleable_dict(parent_cont)
-    handle_container(curator, parent_cont)
+    if curator.validate_container(parent_cont):
+        curator.curate_container(parent_cont)
+    log.info(f"Assigning work to each worker process.")
     # Populate assignments
     for i, child_cont in enumerate(root_walker.deque):
         distributions[i % workers].append(container_to_pickleable_dict(child_cont))
@@ -123,11 +183,11 @@ def run_multiproc(curator, root_walker):
         )
         proc.start()
         worker_ps.append(proc)
+    # Block until each process has completed
     for worker_p in worker_ps:
         worker_p.join()
         log.info(f"Worker {worker_p.name} finished with exit code: {worker_p.exitcode}")
-
-    # breakpoint()
+    # If a reporter was instantiated, send it the termination signal.
     if curator.reporter:
         curator.reporter.write("END")
         curator.reporter.join()

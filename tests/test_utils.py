@@ -6,7 +6,7 @@ import pytest
 from fw_gear_hierarchy_curator.utils import (
     container_from_pickleable_dict,
     container_to_pickleable_dict,
-    handle_container,
+    handle_work,
     make_walker,
 )
 
