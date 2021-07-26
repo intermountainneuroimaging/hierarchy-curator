@@ -1,4 +1,4 @@
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 import flywheel
 import pytest
@@ -25,9 +25,10 @@ def test_container_to_pickleable_dict():
     assert out["parent_id"] == "test"
 
 
-def test_container_from_pickleable_dict():
+def test_container_from_pickleable_dict(mocker):
     val = {"container_type": "subject", "id": "test"}
     curator_mock = MagicMock()
+    curator_mock.context.client.return_value = flywheel.Subject(label="test")
     _ = container_from_pickleable_dict(val, curator_mock)
     curator_mock.context.client.get_subject.assert_called_once_with("test")
 

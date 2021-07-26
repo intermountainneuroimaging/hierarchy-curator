@@ -28,7 +28,7 @@ license = "MIT"
     black = "^20.8b1"
     isort = "^5.6.4"
     rpdb = "^0.1.6"
-        fw-gear-testing = {path = "../utils/testing"}
+    fw-gear-testing = "^0"
     remote-pdb = "^2.1.0"
 
 
