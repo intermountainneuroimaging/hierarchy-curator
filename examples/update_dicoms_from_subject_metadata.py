@@ -16,7 +16,7 @@ class Curator(HierarchyCurator):
         self.sub_label = subject.label
 
     def curate_file(self, file_):
-        if file_.type == 'dicom':
+        if file_.type == "dicom":
             # Get parent of file
             parent_type = file_.parent_ref["type"]
             get_parent_fn = getattr(self.context.client, f"get_{parent_type}")

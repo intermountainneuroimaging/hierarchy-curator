@@ -139,6 +139,17 @@ python-versions = "*"
 six = "*"
 
 [[package]]
+name = "dill"
+version = "0.3.4"
+description = "serialize all of python"
+category = "dev"
+optional = false
+python-versions = ">=2.7, !=3.0.*"
+
+[package.extras]
+graph = ["objgraph (>=1.7.2)"]
+
+[[package]]
 name = "docker"
 version = "5.0.0"
 description = "A Python library for the Docker Engine API."
@@ -453,6 +464,14 @@ description = "A powerful caching library for Python, with TTL support and multi
 category = "main"
 optional = false
 python-versions = ">=3, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, <4"
+
+[[package]]
+name = "multiprocessing-logging"
+version = "0.3.1"
+description = "Logger for multiprocessing applications"
+category = "main"
+optional = false
+python-versions = "*"
 
 [[package]]
 name = "mypy-extensions"
@@ -1067,7 +1086,7 @@ python-versions = "*"
 [metadata]
 lock-version = "1.1"
     python-versions = "^3.8"
-content-hash = "bae42c218e7240eb15a809491b8bae52276cf8694a985c60201a18fc233a9a26"
+content-hash = "1bf3c29cd13d664217ffcab3efb7ea0de9bc82bb6c1df07bd0c49ca6efa9a82c"
 
 [metadata.files]
 appdirs = [
@@ -1166,6 +1185,10 @@ coverage = [
 cycler = [
     {file = "cycler-0.10.0-py2.py3-none-any.whl", hash = "sha256:1d8a5ae1ff6c5cf9b93e8811e581232ad8920aeec647c37316ceac982b08cb2d"},
     {file = "cycler-0.10.0.tar.gz", hash = "sha256:cd7b2d1018258d7247a71425e9f26463dfb444d411c39569972f4ce586b0c9d8"},
+]
+dill = [
+    {file = "dill-0.3.4-py2.py3-none-any.whl", hash = "sha256:7e40e4a70304fd9ceab3535d36e58791d9c4a776b38ec7f7ec9afc8d3dca4d4f"},
+    {file = "dill-0.3.4.zip", hash = "sha256:9f9734205146b2b353ab3fec9af0070237b6ddae78452af83d2fca84d739e675"},
 ]
 docker = [
     {file = "docker-5.0.0-py2.py3-none-any.whl", hash = "sha256:fc961d622160e8021c10d1bcabc388c57d55fb1f917175afbe24af442e6879bd"},
@@ -1360,6 +1383,9 @@ mccabe = [
 memoization = [
     {file = "memoization-0.3.2-py3-none-any.whl", hash = "sha256:6109bcfdbd6fc6c33004fcdc5d8e291c1223a7416c5dad61ec777d260f6038d2"},
     {file = "memoization-0.3.2.tar.gz", hash = "sha256:65d19404b9acc74a764d3e584d8fb17c56bc446d386a28afb93f2247507c99cc"},
+]
+multiprocessing-logging = [
+    {file = "multiprocessing_logging-0.3.1-py2.py3-none-any.whl", hash = "sha256:9d3eb0f1f859b7ba6250a029726f77a7701999deda939595122d8748751de2e3"},
 ]
 mypy-extensions = [
     {file = "mypy_extensions-0.4.3-py2.py3-none-any.whl", hash = "sha256:090fedd75945a69ae91ce1303b5824f428daf5a028d2f6ab8a299250a846f15d"},

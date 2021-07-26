@@ -6,7 +6,7 @@ import pytest
 from fw_gear_hierarchy_curator.utils import (
     container_from_pickleable_dict,
     container_to_pickleable_dict,
-    handle_container,
+    handle_work,
     make_walker,
 )
 
@@ -33,25 +33,29 @@ def test_container_from_pickleable_dict(mocker):
     curator_mock.context.client.get_subject.assert_called_once_with("test")
 
 
-def test_handle_container(mocker):
+def test_handle_work(mocker):
     pickleable_mock = mocker.patch(
         "fw_gear_hierarchy_curator.utils.container_from_pickleable_dict"
     )
+    func = MagicMock()
     curator = MagicMock()
-    handle_container(curator, {})
-    curator.validate_container.assert_called_once()
-    curator.curate_container.assert_called_once()
+    children = [MagicMock()]
+    handle_work(children, curator, func)
+    pickleable_mock.assert_called_once_with(children[0], curator)
+    func.assert_called_once_with(curator, [pickleable_mock.return_value])
 
 
-def test_handle_container_api_exception_doesnt_validate(mocker):
+def test_handle_container_api_exception_doesnt_validate(mocker, caplog):
     pickleable_mock = mocker.patch(
         "fw_gear_hierarchy_curator.utils.container_from_pickleable_dict"
     )
     pickleable_mock.side_effect = flywheel.rest.ApiException
+    func = MagicMock()
     curator = MagicMock()
-    handle_container(curator, {})
-    curator.validate_container.assert_not_called()
-    curator.curate_container.assert_not_called()
+    children = [MagicMock()]
+    handle_work(children, curator, func)
+    func.assert_called_once_with(curator, [])
+    assert caplog.record_tuples[0][2].startswith("Could not get container")
 
 
 def test_make_walker(mocker):

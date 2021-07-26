@@ -18,7 +18,7 @@ class Curator(HierarchyCurator):
         super().__init__(**kwargs)
         log.info("Initiating reporter")
         log.info(vars(self))
-        
+
         self.reporter = AggregatedReporter(
             output_path=Path(self.context.output_dir / "test.csv")
         )

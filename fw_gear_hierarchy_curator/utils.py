@@ -15,7 +15,6 @@ def container_to_pickleable_dict(container: datatypes.Container) -> t.Dict[str, 
     a simple dictionary that can be pickled for
     multiprocessing.
     """
-    log.debug(f"Found {container.container_type}, ID: {container.id}")
     val = {
         "id": container.id,
         "container_type": container.container_type,
@@ -38,21 +37,26 @@ def container_from_pickleable_dict(
         local_curator.context.client, f"get_{val['container_type']}"
     )
     container = get_container_fn(val["id"])
-    log.debug(f"Found {container.container_type}, ID: {container.id}")
     return container
 
 
-def handle_container(local_curator: c.HierarchyCurator, val: t.Dict[str, str]):
-    """Take the pickleable dictionary and convert back
-    into container, then handle curation.
+def handle_work(
+    children: t.List[t.Dict[str, str]],
+    local_curator: c.HierarchyCurator,
+    handle: t.Callable[[t.List[datatypes.Container], c.HierarchyCurator], None],
+):
+    """Convert list of dicts into list of containers,
+    perform a callback on this list of containers.
     """
-    try:
-        container = container_from_pickleable_dict(val, local_curator)
-    except flywheel.rest.ApiException as e:
-        log.error(e)
-    else:
-        if local_curator.validate_container(container):
-            local_curator.curate_container(container)
+    containers = []
+    for child in children:
+        try:
+            container = container_from_pickleable_dict(child, local_curator)
+        except flywheel.rest.ApiException as e:
+            log.error("Could not get container, skipping curation", exc_info=True)
+        else:
+            containers.append(container)
+    handle(local_curator, containers)
 
 
 def make_walker(container: datatypes.Container, curator: c.HierarchyCurator):
