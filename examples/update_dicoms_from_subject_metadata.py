@@ -21,12 +21,16 @@ def robust_replace(parent, filename, filepath):
     @backoff.on_exception(
         backoff.expo, ApiException, max_time=60, giveup=is_not_500_502_504
     )
+    # will retry for 60s, waiting an exponentially increasing delay between retries
+    # e.g. 1s, 2s, 4s, 8s, etc, giving up if exception is in 500, 502, 504.
     def robust_delete(parent, filename):
         parent.delete_file(filename)
 
     @backoff.on_exception(
         backoff.expo, ApiException, max_time=60, giveup=is_not_500_502_504
     )
+    # will retry for 60s, waiting an exponentially increasing delay between retries
+    # e.g. 1s, 2s, 4s, 8s, etc, giving up if exception is in 500, 502, 504.
     def robust_upload(parent, filepath):
         parent.upload_file(filepath)
 
