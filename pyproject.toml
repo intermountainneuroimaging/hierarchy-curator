@@ -16,6 +16,7 @@ license = "MIT"
     pypng = "^0.0.20"
     fw-file = "^0.7"
     flywheel-gear-toolkit = "^0.3"
+    backoff = "^1.11.1"
 
 
     [tool.poetry.dev-dependencies]
