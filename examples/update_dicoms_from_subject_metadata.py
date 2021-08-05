@@ -1,22 +1,24 @@
 import tempfile
 
+import backoff
+
 from flywheel.rest import ApiException
 from flywheel_gear_toolkit.utils.curator import HierarchyCurator
 from fw_file.dicom import DICOMCollection
 
 
+def is_not_500_502_504(exc):
+    if hasattr(exc, "status"):
+        if exc.status in [504, 502, 500]:
+            # 500: Internal Server Error
+            # 502: Bad Gateway
+            # 504: Gateway Timeout
+            return False
+    return True
+
+
 def robust_replace(parent, filename, filepath):
     """Robust deletion and upload of file."""
-    import backoff
-
-    def is_not_500_502_504(exc):
-        if hasattr(exc, "status"):
-            if exc.status in [504, 502, 500]:
-                # 500: Internal Server Error
-                # 502: Bad Gateway
-                # 504: Gateway Timeout
-                return False
-        return True
 
     @backoff.on_exception(
         backoff.expo, ApiException, max_time=60, giveup=is_not_500_502_504
@@ -40,7 +42,7 @@ def robust_replace(parent, filename, filepath):
 
 class Curator(HierarchyCurator):
     def __init__(self, **kwargs):
-        super().__init__(**kwargs, extra_packages=["tqdm==4.59.0", "backoff==1.11.1"])
+        super().__init__(**kwargs, extra_packages=["tqdm==4.59.0"])
         # Curate depth first
         #   Important to curate depth first so that all files in curate_file
         #   Are guaranteed to be under the current self.sub_label
