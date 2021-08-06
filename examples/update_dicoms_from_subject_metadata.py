@@ -1,7 +1,43 @@
 import tempfile
 
+import backoff
+
+from flywheel.rest import ApiException
 from flywheel_gear_toolkit.utils.curator import HierarchyCurator
 from fw_file.dicom import DICOMCollection
+
+
+def is_not_500_502_504(exc):
+    if hasattr(exc, "status"):
+        if exc.status in [504, 502, 500]:
+            # 500: Internal Server Error
+            # 502: Bad Gateway
+            # 504: Gateway Timeout
+            return False
+    return True
+
+
+def robust_replace(parent, filename, filepath):
+    """Robust deletion and upload of file."""
+
+    @backoff.on_exception(
+        backoff.expo, ApiException, max_time=60, giveup=is_not_500_502_504
+    )
+    # will retry for 60s, waiting an exponentially increasing delay between retries
+    # e.g. 1s, 2s, 4s, 8s, etc, giving up if exception is in 500, 502, 504.
+    def robust_delete(parent, filename):
+        parent.delete_file(filename)
+
+    @backoff.on_exception(
+        backoff.expo, ApiException, max_time=60, giveup=is_not_500_502_504
+    )
+    # will retry for 60s, waiting an exponentially increasing delay between retries
+    # e.g. 1s, 2s, 4s, 8s, etc, giving up if exception is in 500, 502, 504.
+    def robust_upload(parent, filepath):
+        parent.upload_file(filepath)
+
+    robust_delete(parent, filename)
+    robust_upload(parent, filepath)
 
 
 class Curator(HierarchyCurator):
@@ -25,8 +61,8 @@ class Curator(HierarchyCurator):
             #   Since we're traversing depth first, this is guaranteed to be
             #   The label of the subject the file is under.
             with tempfile.NamedTemporaryFile() as temp:
-                file_.download(temp)
-                dcms = DICOMCollection.from_zip(temp)
+                file_.download(temp.name)
+                dcms = DICOMCollection.from_zip(temp.name)
                 dcms.set("PatientID", self.sub_label)
 
                 dcms.to_zip(f"/tmp/{file_.name}")
@@ -40,6 +76,4 @@ class Curator(HierarchyCurator):
             you need.
             """
 
-            # Delete existing file and re-upload to "replace"
-            parent.delete_file(file_.name)
-            parent.upload_file(f"/tmp/{file_.name}")
+            robust_replace(parent, file_.name, f"/tmp/{file_.name}")
