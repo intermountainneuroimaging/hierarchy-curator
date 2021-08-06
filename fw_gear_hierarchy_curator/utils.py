@@ -43,7 +43,7 @@ def container_from_pickleable_dict(
 def handle_work(
     children: t.List[t.Dict[str, str]],
     local_curator: c.HierarchyCurator,
-    handle: t.Callable[[t.List[datatypes.Container], c.HierarchyCurator], None],
+    handle: t.Callable[[c.HierarchyCurator, t.List[datatypes.Container]], None],
 ):
     """Convert list of dicts into list of containers,
     perform a callback on this list of containers.

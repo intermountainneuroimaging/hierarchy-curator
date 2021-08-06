@@ -1,5 +1,7 @@
 import copy
+import dataclasses
 import logging
+import multiprocessing
 import pickle
 import sys
 from contextlib import contextmanager, nullcontext
@@ -10,8 +12,10 @@ from unittest.mock import MagicMock, Mock
 
 import _pytest
 import dill
+import pandas as pd
 import pytest
 from flywheel_gear_toolkit.utils.curator import HierarchyCurator
+from flywheel_gear_toolkit.utils.reporters import AggregatedReporter, BaseLogRecord
 
 from fw_gear_hierarchy_curator.curate import main
 
@@ -82,10 +86,17 @@ def caplog_multithreaded():
 log = logging.getLogger("test")
 
 
+@dataclasses.dataclass
+class MyLogMsg(BaseLogRecord):
+    msg: str
+
+
 class reporter(HierarchyCurator):
-    def __init__(self, **kwargs):
+    def __init__(self, log_path, **kwargs):
         super().__init__(**kwargs)
-        self.config.report = kwargs.get("report", True)
+        self.config.report = True
+        self.config.path = log_path
+        self.config.format = MyLogMsg
         self.config.multi = kwargs.get("multi", True)
         self.config.workers = 2
         self.data = {
@@ -99,11 +110,13 @@ class reporter(HierarchyCurator):
         self.data["project"] = proj.label
         path = self.data["project"]
         log.info(path)
+        self.reporter.append_log(msg=path)
 
     def curate_subject(self, sub):
         self.data["subject"] = sub.label
         path = f"{self.data['project']}/{self.data['subject']}"
         log.info(path)
+        self.reporter.append_log(msg=path)
 
     def curate_session(self, ses):
         self.data["session"] = ses.label
@@ -115,6 +128,7 @@ class reporter(HierarchyCurator):
             + self.data["session"]
         )
         log.info(path)
+        self.reporter.append_log(msg=path)
 
     def curate_acquisition(self, acq):
         self.data["acquisition"] = acq.label
@@ -128,13 +142,14 @@ class reporter(HierarchyCurator):
             + self.data["acquisition"]
         )
         log.info(path)
+        self.reporter.append_log(msg=path)
 
 
 @pytest.fixture
-def oneoff_curator(containers):
-    def _gen(report=True, multi=True):
+def oneoff_curator(tmp_path, containers):
+    def _gen(multi=True):
 
-        my_reporter = reporter(report=report, multi=multi)
+        my_reporter = reporter(tmp_path / "output.csv", multi=multi)
         client_kwargs = {}
         for c_type in ["acquisition", "session", "subject", "project"]:
             client_kwargs[f"get_{c_type}"] = PickleableMock(
@@ -166,7 +181,11 @@ class PickleableMock(MagicMock):
 
 
 def test_pickle_curator(oneoff_curator):
+    man = multiprocessing.Manager()
     curator = oneoff_curator()
+    curator.reporter = AggregatedReporter(
+        curator.config.path, format=curator.config.format, queue=man.Queue()
+    )
     curator.context = PickleableMock()
     curator.context.client = PickleableMock()
     out = dill.dumps(curator)
@@ -175,28 +194,19 @@ def test_pickle_curator(oneoff_curator):
     assert out
 
 
-@pytest.mark.parametrize("multi", [True, False])
-def test_curate_main_depth_first(
-    multi, fw_project, oneoff_curator, mocker, caplog, caplog_multithreaded, containers
-):
+def test_curate_main_depth_first(fw_project, oneoff_curator, mocker, containers):
     project = fw_project(n_subs=2)
     curator_path = ASSETS_DIR / "dummy_curator.py"
 
     get_curator_patch = mocker.patch("fw_gear_hierarchy_curator.curate.c.get_curator")
-    reporter_mock = mocker.patch(
-        "fw_gear_hierarchy_curator.curate.reporters.AggregatedReporter"
-    )
-    reporter_mock.return_value = PickleableMock()
 
-    get_curator_patch.return_value = oneoff_curator(report=True, multi=multi)
+    get_curator_patch.return_value = oneoff_curator(multi=True)
     context_mock = MagicMock()
 
-    with (caplog_multithreaded() if multi else nullcontext()):
-        log = logging.getLogger()
-        main(context_mock, project, curator_path)
-        log.info("END")
-
-    records = [rec[2] for rec in caplog.record_tuples if rec[0] == "test"]
+    main(context_mock, project, curator_path)
+    records = list(
+        pd.read_csv(get_curator_patch.return_value.config.path)["msg"].values
+    )
     exp = [
         "test",
         "test/sub-1",
@@ -234,63 +244,34 @@ def test_curate_main_depth_first(
 """
 
 
-@pytest.mark.parametrize(
-    "multi, exp",
-    [
-        (
-            True,
-            [
-                "test",
-                "test/sub-0",
-                "test/sub-0/ses-0-sub-0",
-                "test/sub-0/ses-0-sub-0/acq-0-ses-0-sub-0",
-                "test/sub-1",
-                "test/sub-1/ses-0-sub-1",
-                "test/sub-1/ses-0-sub-1/acq-0-ses-0-sub-1",
-            ],
-        ),
-        (
-            False,
-            [
-                "test",
-                "test/sub-0",
-                "test/sub-1/ses-0-sub-0",
-                "test/sub-1/ses-0-sub-1/acq-0-ses-0-sub-0",
-                "test/sub-1",
-                "test/sub-1/ses-0-sub-1",
-                "test/sub-1/ses-0-sub-1/acq-0-ses-0-sub-1",
-            ],
-        ),
-    ],
-)
 def test_curate_main_breadth_first(
-    multi,
-    exp,
     fw_project,
     oneoff_curator,
     mocker,
-    caplog,
-    caplog_multithreaded,
     containers,
 ):
     project = fw_project(n_subs=2)
     curator_path = ASSETS_DIR / "dummy_curator.py"
 
     get_curator_patch = mocker.patch("fw_gear_hierarchy_curator.curate.c.get_curator")
-    reporter_mock = mocker.patch(
-        "fw_gear_hierarchy_curator.curate.reporters.AggregatedReporter"
-    )
 
-    get_curator_patch.return_value = oneoff_curator(report=True, multi=multi)
+    get_curator_patch.return_value = oneoff_curator(multi=True)
     get_curator_patch.return_value.config.depth_first = False
 
     context_mock = MagicMock()
 
-    with (caplog_multithreaded() if multi else nullcontext()):
-        log = logging.getLogger()
-        main(context_mock, project, curator_path)
-        log.info("END")
+    main(context_mock, project, curator_path)
 
-    records = [rec[2] for rec in caplog.record_tuples if rec[0] == "test"]
-    _ = [records.remove(val) for val in exp]
-    assert not len(records)
+    records = list(
+        pd.read_csv(get_curator_patch.return_value.config.path)["msg"].values
+    )
+    exp = [
+        "test",
+        "test/sub-0",
+        "test/sub-0/ses-0-sub-0",
+        "test/sub-0/ses-0-sub-0/acq-0-ses-0-sub-0",
+        "test/sub-1",
+        "test/sub-1/ses-0-sub-1",
+        "test/sub-1/ses-0-sub-1/acq-0-ses-0-sub-1",
+    ]
+    assert all([val in records for val in exp])

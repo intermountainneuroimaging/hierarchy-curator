@@ -3,29 +3,22 @@ import argparse
 import copy
 import functools
 import logging
-import math
 import multiprocessing
-import os
 import sys
 import typing as t
-from contextlib import contextmanager
 from pathlib import Path
 
 import flywheel
-import multiprocessing_logging
+
+# import multiprocessing_logging
 from flywheel_gear_toolkit import GearToolkitContext
 from flywheel_gear_toolkit.utils import curator as c
 from flywheel_gear_toolkit.utils import datatypes, reporters, walker
 
-from .utils import (
-    container_from_pickleable_dict,
-    container_to_pickleable_dict,
-    handle_work,
-    make_walker,
-)
+from .utils import container_to_pickleable_dict, handle_work, make_walker
 
 sys.path.insert(0, str(Path(__file__).parents[1]))
-multiprocessing_logging.install_mp_handler()
+# multiprocessing_logging.install_mp_handler()
 log = logging.getLogger(__name__)
 
 
@@ -56,7 +49,7 @@ def handle_breadth_first(
 ) -> None:
     """Add all containers to one walker and walk in breadth-first."""
     w = make_walker(containers.pop(0), local_curator)
-    if work:
+    if containers:
         w.add(containers)
     for cont in w.walk(callback=local_curator.config.callback):
         log.debug(f"Found {cont.container_type}, ID: {cont.id}")
@@ -126,27 +119,11 @@ def main(
         reload=curator.config.reload,
         stop_level=curator.config.stop_level,
     )
-    # Initialize reporter if in config
-    if curator.config.report:
-        curator.reporter = reporters.AggregatedReporter(
-            curator.config.path,
-            format=curator.config.format,
-            multi=curator.config.multi,
-        )
-    if curator.config.multi:
-        run_multiproc(curator, root_walker)
-    else:
-        log.info("Running in single-process mode")
-        for container in root_walker.walk(callback=curator.config.callback):
-            try:
-                if curator.validate_container(container):
-                    curator.curate_container(container)
-            except Exception:  # pylint: disable=broad-except pragma: no cover
-                log.error("Uncaught Exception", exc_info=True)
+    start_multiproc(curator, root_walker)
 
 
 # See docs/multiprocessing.md for details on why this implementation was chosen
-def run_multiproc(curator, root_walker):
+def start_multiproc(curator, root_walker):
     """Run hierarchy curator in parallel.
 
     1. Set up
@@ -159,10 +136,18 @@ def run_multiproc(curator, root_walker):
     log.info(f"Running in multi-process mode with {curator.config.workers} workers")
     lock = multiprocessing.Lock()
     workers = curator.config.workers
-    if curator.reporter:
+    reporter_proc = None
+    # Initialize reporter if in config
+    if curator.config.report:
+        manager = multiprocessing.Manager()
+        curator.reporter = reporters.AggregatedReporter(
+            curator.config.path, format=curator.config.format, queue=manager.Queue()
+        )
         # Logger process
-        reporter = curator.reporter
-        reporter.start()
+        reporter_proc = multiprocessing.Process(
+            target=curator.reporter.worker,
+        )
+        reporter_proc.start()
         log.info("Initialized reporting process")
     distributions = [[] for _ in range(workers)]
     # Curate first container
@@ -188,9 +173,9 @@ def run_multiproc(curator, root_walker):
         worker_p.join()
         log.info(f"Worker {worker_p.name} finished with exit code: {worker_p.exitcode}")
     # If a reporter was instantiated, send it the termination signal.
-    if curator.reporter:
+    if reporter_proc:
         curator.reporter.write("END")
-        curator.reporter.join()
+        reporter_proc.join()
 
 
 if __name__ == "__main__":  # pragma: no cover

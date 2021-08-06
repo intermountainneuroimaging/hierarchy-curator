@@ -3,6 +3,7 @@ A script to delete files attached at the acquisition level and tagged with 'dele
 """
 
 import logging
+
 import flywheel
 from flywheel_gear_toolkit.utils.curator import HierarchyCurator
 

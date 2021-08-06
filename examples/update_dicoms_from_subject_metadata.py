@@ -1,7 +1,6 @@
 import tempfile
 
 import backoff
-
 from flywheel.rest import ApiException
 from flywheel_gear_toolkit.utils.curator import HierarchyCurator
 from fw_file.dicom import DICOMCollection

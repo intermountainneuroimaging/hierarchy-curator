@@ -41,14 +41,6 @@ tests = ["coverage[toml] (>=5.0.2)", "hypothesis", "pympler", "pytest (>=4.3.0)"
 tests_no_zope = ["coverage[toml] (>=5.0.2)", "hypothesis", "pympler", "pytest (>=4.3.0)", "six", "mypy", "pytest-mypy-plugins"]
 
 [[package]]
-name = "backoff"
-version = "1.11.1"
-description = "Function decoration for backoff and retry"
-category = "main"
-optional = false
-python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
-
-[[package]]
 name = "black"
 version = "20.8b1"
 description = "The uncompromising code formatter."
@@ -219,21 +211,26 @@ version = "0.3.3"
 description = "Tooling for developing Flywheel gears"
 category = "main"
 optional = false
-python-versions = ">=3.8,<4.0"
+python-versions = "^3.8"
+develop = false
 
 [package.dependencies]
-dotty-dict = ">=1.2.1,<2.0.0"
-flywheel-bids = ">=0.9.1,<0.10.0"
-flywheel-gears = ">=0.2,<0.3"
+dotty-dict = "^1.2.1"
+flywheel-bids = "^0.9.1"
+flywheel-gears = "^0.2"
 flywheel-sdk = ">=14.2.0"
-fw-gear-testing = ">=0.2.4,<0.3.0"
-jsonschema = ">=3.2.0,<4.0.0"
-nipype = ">=1.6.0,<2.0.0"
-pydantic = ">=1.8.1,<2.0.0"
+fw-gear-testing = "^0.2.4"
+jsonschema = "^3.2.0"
+nipype = "^1.6.0"
+pydantic = "^1.8.1"
 
 [package.extras]
 all = ["numpy (>=1,<2)"]
 numpy = ["numpy (>=1,<2)"]
+
+[package.source]
+type = "directory"
+url = "gear-toolkit"
 
 [[package]]
 name = "flywheel-gears"
@@ -1041,7 +1038,7 @@ python-versions = "*"
 [metadata]
 lock-version = "1.1"
     python-versions = "^3.8"
-content-hash = "93b5c5ea73762390f28fbb02625b1d6031e0970663d1fc5e46ea37d7daea109b"
+content-hash = "beb9d8a265552f34664844c29df46579cac70132ec9108bfb41f62c1480a5b30"
 
 [metadata.files]
 appdirs = [
@@ -1059,10 +1056,6 @@ atomicwrites = [
 attrs = [
     {file = "attrs-21.2.0-py2.py3-none-any.whl", hash = "sha256:149e90d6d8ac20db7a955ad60cf0e6881a3f20d37096140088356da6c716b0b1"},
     {file = "attrs-21.2.0.tar.gz", hash = "sha256:ef6aaac3ca6cd92904cdd0d83f629a15f18053ec84e6432106f7a4d04ae4f5fb"},
-]
-backoff = [
-    {file = "backoff-1.11.1-py2.py3-none-any.whl", hash = "sha256:61928f8fa48d52e4faa81875eecf308eccfb1016b018bb6bd21e05b5d90a96c5"},
-    {file = "backoff-1.11.1.tar.gz", hash = "sha256:ccb962a2378418c667b3c979b504fdeb7d9e0d29c0579e3b13b86467177728cb"},
 ]
 black = [
     {file = "black-20.8b1.tar.gz", hash = "sha256:1c02557aa099101b9d21496f8a914e9ed2222ef70336404eeeac8edba836fbea"},
@@ -1162,9 +1155,7 @@ filelock = [
 flywheel-bids = [
     {file = "flywheel_bids-0.9.2-py2.py3-none-any.whl", hash = "sha256:765fcd270df520c30d01b9eb0cf874ad3c7ad58262123fbe7921e603c4895379"},
 ]
-flywheel-gear-toolkit = [
-    {file = "flywheel_gear_toolkit-0.3.3-py3-none-any.whl", hash = "sha256:1e2f3424233e8b94082c9832f5570b1fba0597626c5e5d9343827cc32bdb278e"},
-]
+flywheel-gear-toolkit = []
 flywheel-gears = [
     {file = "flywheel_gears-0.2.1-py2.py3-none-any.whl", hash = "sha256:8f09880c8227c469be5e7e7a2977cb136b2a40565a0b91e6be5be33e8df32f24"},
 ]
