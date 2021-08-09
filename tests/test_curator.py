@@ -14,7 +14,7 @@ def test_worker(mocker):
         "fw_gear_hierarchy_curator.utils.container_from_pickleable_dict"
     )
     walker_mock = mocker.patch("fw_gear_hierarchy_curator.curate.make_walker")
-    walker_mock.return_value.walk.return_value = [flywheel.Subject(label="test")]
+    walker_mock.return_value.walk.return_value = [flywheel.Acquisition(label="test")]
     work = [
         {"container_type": "test", "id": "test"},
         {"container_type": "test1", "id": "test1"},
@@ -27,14 +27,13 @@ def test_worker(mocker):
         (work[0], curator),
         (work[1], curator),
     ]
-    assert curator.context.get_client.call_count == 1
     assert walker_mock.call_count == 2
+    assert curator.context.get_client.call_count == 1
     assert curator.validate_container.call_count == 2
     assert curator.curate_container.call_count == 2
-    curator.reset_mock()
     pickle_mock.reset_mock()
     walker_mock.reset_mock()
-
+    curator.reset_mock()
     # Breadth First
     curator.config.depth_first = False
     worker(curator, work, lock_mock, 0)
