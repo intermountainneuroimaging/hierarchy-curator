@@ -1,16 +1,12 @@
 """
-An example curation script to correct the session.label based on a predefined
-mapping and the classification based on the Dicom SeriesDescription data element.
+An example curation script to retrigger gear rules.
 """
 
-import dataclasses
-import json
 import logging
-from pathlib import Path
 
 import flywheel
 from flywheel_gear_toolkit.utils.curator import HierarchyCurator
-from flywheel_gear_toolkit.utils.reporters import AggregatedReporter, BaseLogRecord
+from flywheel_gear_toolkit.utils.reporters import BaseLogRecord
 
 log = logging.getLogger("retrigger_gear_rules")
 log.setLevel("DEBUG")
@@ -30,7 +26,8 @@ def retrigger(acq: flywheel.Acquisition, file_: flywheel.FileEntry):
     # Set to none type
     acq.update_file(file_.name, {"type": None})
     # Set back to nifti
-    acq.update_file(file_.name, {"type": type_, "modality": modality})
+    res = acq.update_file(file_.name, {"type": type_, "modality": modality})
+    log.info(f"{file_.name}: {res}")
 
 
 class Curator(HierarchyCurator):

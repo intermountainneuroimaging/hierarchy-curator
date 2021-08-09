@@ -4,13 +4,11 @@ mapping and the classification based on the Dicom SeriesDescription data element
 """
 
 import dataclasses
-import json
 import logging
-from pathlib import Path
 
 import flywheel
 from flywheel_gear_toolkit.utils.curator import HierarchyCurator
-from flywheel_gear_toolkit.utils.reporters import AggregatedReporter, BaseLogRecord
+from flywheel_gear_toolkit.utils.reporters import BaseLogRecord
 
 
 @dataclasses.dataclass
@@ -29,10 +27,8 @@ log.setLevel("DEBUG")
 class Curator(HierarchyCurator):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        log.info("Initiating reporter")
-        self.reporter = AggregatedReporter(
-            output_path=(Path(self.context.output_dir) / "out.csv"), format=Log
-        )
+        self.config.report = True
+        self.config.format = Log
 
     def curate_project(self, project: flywheel.Project):
         log.info("Curating project %s", project.label)

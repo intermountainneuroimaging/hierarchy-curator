@@ -46,14 +46,7 @@ class Curator(HierarchyCurator):
         super().__init__(**kwargs)
         # Stop at session level since we don't need to curate anything under that.
         self.config.stop_level = "session"
-
-        self.reporter = None
-        if self.write_report:
-            log.info("Initiating reporter")
-            self.reporter = AggregatedReporter(
-                output_path=(Path(self.context.output_dir) / "out.csv"),
-                format=MapLogRecord,  # Use custom log record
-            )
+        self.config.report = True
 
     def curate_session(self, session: flywheel.Session):
         log.info("Curating session %s", session.id)

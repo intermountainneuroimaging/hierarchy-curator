@@ -3,7 +3,6 @@ An example curation script to correct the session.label based on a csv files con
 columns: session.id, label.
 """
 import logging
-from pathlib import Path
 
 import flywheel
 import pandas as pd

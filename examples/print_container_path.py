@@ -22,8 +22,22 @@ SPECIAL_LABEL = "my_special_label"
 
 
 class Curator(HierarchyCurator):
+    """
+    Walk entire hierarchy, but skip everything under the subject
+    with the name "my_special_label"
+    """
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+        # By setting the callback to `self.validate_container`
+        #   we tell the walker to call this whenever it's going
+        #   to queue up a containers children.  `self.validate_container`
+        #   returns `True` by default, unless one of the
+        #   `self.validate_<container> methods has been implemented.  In this
+        #   case we have implemented `self.validate_subject`, so when this
+        #   function returns `True`, the walker will queue that subjects
+        #   children, when it returns `False` it will not, effectively removing
+        #   a branch of the Flyhweel Hierarchy Tree.
         self.config.callback = self.validate_container
 
     def curate_project(self, project: flywheel.Project):

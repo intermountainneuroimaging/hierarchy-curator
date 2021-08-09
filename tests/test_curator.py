@@ -2,6 +2,7 @@ from unittest.mock import MagicMock
 
 import flywheel
 import pytest
+from flywheel_gear_toolkit.utils.reporters import LogRecord
 
 from fw_gear_hierarchy_curator.curate import main, start_multiproc, worker
 
@@ -48,7 +49,7 @@ def test_worker(mocker):
     assert curator.curate_container.call_count == 1
 
 
-def test_start_multiproc(mocker):
+def test_start_multiproc(mocker, tmp_path):
     mocker.patch("fw_gear_hierarchy_curator.curate.multiprocessing")
     mocker.patch("fw_gear_hierarchy_curator.curate.handle_work")
     pickle_mock = mocker.patch(
@@ -60,11 +61,12 @@ def test_start_multiproc(mocker):
         {"container_type": "test1", "id": "test1"},
     ]
     curator = MagicMock()
+    curator.config.format = LogRecord
     curator.config.workers = 2
+    curator.config.path = tmp_path / "out.csv"
 
     start_multiproc(curator, walker)
 
-    curator.reporter.start.assert_called_once()
     assert pickle_mock.call_count == 2
 
 
@@ -90,7 +92,6 @@ def test_main(mocker):
     walker.assert_called_once_with(
         parent, depth_first=True, reload=True, stop_level="session"
     )
-    walker.return_value.walk.assert_called_once()
     reporter.assert_called_once()
     curator_mock.validate_container.assert_called_once()
     curator_mock.curate_container.assert_called_once()
