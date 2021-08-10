@@ -28,7 +28,7 @@ def robust_upload(parent, filepath):
 
 class Curator(HierarchyCurator):
     def __init__(self, **kwargs):
-        super().__init__(**kwargs, extra_packages=["tqdm==4.59.0"])
+        super().__init__(**kwargs, extra_packages=["tqdm==4.59.0", "backoff==1.11.1"])
         # Curate depth first
         #   Important to curate depth first so that all files in curate_file
         #   Are guaranteed to be under the current self.sub_label
