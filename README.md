@@ -1,3 +1,4 @@
+[[_TOC_]]
 
 # Custom Hierarchy Curation Gear
 There are a lot of cases where specific logic must be used to curate a given project. 
@@ -252,3 +253,6 @@ sub-01                       1.
        └── task1.dicom.zip   11.
 ```
 
+# More information
+* [Implementation details](./docs/multiprocessing.md)
+* [Contributors Guide](./docs/CONTRIBUTING.md)
