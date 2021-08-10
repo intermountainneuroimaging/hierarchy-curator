@@ -47,18 +47,18 @@ More details at the [Flywheel Gear Toolkit docs](https://gear-toolkit.readthedoc
 * **additional_input_two**: Additional file to be used by the curator.
 * **additional_input_three**: Additional file to be used by the curator.
 
+> NOTE: See [Input Files)(#input-files) for details on how to access inputs.
+
 ## HierarchyCurator
 
 ### Curator configuration
 
 All configuration for the curator can be accessed via the `config` instance attribute, which is itself an instance of `CuratorConfig`.  Availabel config options are:
 
-* `multi` (boolean): Whether to run multithreaded or not (default True).
 * `workers` (integer): Number of multithreaded workers to use (default 1).
-* `depth_first` (boolean): Walks depth-first if True and breadth-first if False (default True)
+* `depth_first` (boolean): Walks depth-first if True and breadth-first if False (default True) (See [Breadth-first vs. depth-first traversal](#breadth-first-vs-depth-first-traversal))
 * `stop_level` (str): Container level to stop walking at (Default None)
-* `filter_walker` (boolean): TODO
-* `callback` (function): Optional callback to decide wether or not to queue a given container (default None).
+* `callback` (function): Optional callback to decide wether or not to queue a given container (default None). (See [Walker Callback](#walker-callback) for details)
 * `report` (boolean): Whether or not to create a report (default False).
 * `format` (BaseLogRecord, see below): Report format (default LogRecord).
 * `path` (path): Location to store report (default `/flywheel/v0/output/output.csv`).
@@ -72,6 +72,8 @@ from flywheel_gear_toolkit.utils.curator import HierarchyCurator
 class Curator(HierarchyCurator):
     ...
 ```
+### Walker callback
+The walker callback (configured at `self.config.callback`) is a function that accepts a container and returns a boolean.  It has the same signature as `validate_container()`.  When walking the hierarchy, this function will be called in between selecting the next container, and queueing its children, so you can use this function to dynamically decide if you want to queue a given containers children.
 
 For example, you can write a custom `validate_session()` to exclude children of sessions whose label don't match a regex: 
 
@@ -90,8 +92,8 @@ class Curator(HierarchyCurator):
     def curate_acquisition(acquisition):
         ...
 ```
-In the above example, the curator will walk the hierarchy.  When it reaches a session, it will first call `self.validate_container()` on that session, which in turn calls `self.validate_session()` (See [Validation Methods](#validate)).  `self.validate_session()` will only return `True` if the session starts with `trial-` and has a number (such as `trial-1`).  If `self.validate_session()` returns False, then the children of that session will not be queued and you won't curate any acquisitions, analyses, or files under this session.  __NOTE__: Session attached files would still show up in `curate_file`
-
+In the above example, the curator will walk the hierarchy.  When it reaches a session, it will first call `self.validate_container()` on that sssion, which in turn calls `self.validate_session()` (See [Validation Methods](#validate)).  `self.validate_session()` will only return `True` if the session starts with `trial-` and has a number (such as `trial-1`).  If `self.validate_session()` returns False, then the children of that session will not be queued and you won't curate any acquisitions, analyses, or files under this session.  __NOTE__: Session attached files would still show up in `curate_file`
+e
 
 ### Curate Methods
 The Curator Class must define curate methods for each container type 
