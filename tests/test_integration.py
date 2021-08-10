@@ -194,6 +194,31 @@ def test_pickle_curator(oneoff_curator):
     assert out
 
 
+def curate_subject(sub):
+    if sub.label is None:
+        raise ValueError()
+
+
+def test_curate_errors(fw_project, oneoff_curator, mocker, containers):
+    project = fw_project(n_subs=2)
+    curator_path = ASSETS_DIR / "dummy_curator.py"
+
+    get_curator_patch = mocker.patch("fw_gear_hierarchy_curator.curate.c.get_curator")
+
+    project.subjects()[0].label = None
+    get_curator_patch.return_value = oneoff_curator(multi=True)
+    get_curator_patch.return_value.curate_subject = curate_subject
+    context_mock = MagicMock()
+    main(context_mock, project, curator_path)
+    records = list(
+        pd.read_csv(get_curator_patch.return_value.config.path)["msg"].values
+    )
+    exp = [
+        "test",
+    ]
+    assert all([val in records for val in exp])
+
+
 def test_curate_main_depth_first(fw_project, oneoff_curator, mocker, containers):
     project = fw_project(n_subs=2)
     curator_path = ASSETS_DIR / "dummy_curator.py"

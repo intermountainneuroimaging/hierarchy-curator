@@ -23,7 +23,8 @@ def test_worker(mocker):
     # Depth First
     curator.config.depth_first = True
     lock_mock = MagicMock()
-    worker(curator, work, lock_mock, 0)
+    event_mock = MagicMock()
+    worker(curator, work, lock_mock, 0, event_mock)
     assert [call[0] for call in pickle_mock.call_args_list] == [
         (work[0], curator),
         (work[1], curator),
@@ -37,7 +38,7 @@ def test_worker(mocker):
     curator.reset_mock()
     # Breadth First
     curator.config.depth_first = False
-    worker(curator, work, lock_mock, 0)
+    worker(curator, work, lock_mock, 0, event_mock)
 
     assert curator.context.get_client.call_count == 1
     assert [call[0] for call in pickle_mock.call_args_list] == [
@@ -50,7 +51,9 @@ def test_worker(mocker):
 
 
 def test_start_multiproc(mocker, tmp_path):
-    mocker.patch("fw_gear_hierarchy_curator.curate.multiprocessing")
+    mocker.patch("fw_gear_hierarchy_curator.curate.Process")
+    mocker.patch("fw_gear_hierarchy_curator.curate.Manager")
+    mocker.patch("fw_gear_hierarchy_curator.curate.Lock")
     mocker.patch("fw_gear_hierarchy_curator.curate.handle_work")
     pickle_mock = mocker.patch(
         "fw_gear_hierarchy_curator.curate.container_to_pickleable_dict"
@@ -71,6 +74,7 @@ def test_start_multiproc(mocker, tmp_path):
 
 
 def test_main(mocker):
+    start_multiproc = mocker.patch("fw_gear_hierarchy_curator.curate.start_multiproc")
     get_curator = mocker.patch("fw_gear_hierarchy_curator.curate.c.get_curator")
     curator_mock = MagicMock()
     curator_mock.config.depth_first = True
@@ -79,10 +83,6 @@ def test_main(mocker):
     curator_mock.config.multi = False
     get_curator.return_value = curator_mock
     walker = mocker.patch("fw_gear_hierarchy_curator.curate.walker.Walker")
-    walker.return_value.walk.return_value = ["test"]
-    reporter = mocker.patch(
-        "fw_gear_hierarchy_curator.curate.reporters.AggregatedReporter"
-    )
     ctx = MagicMock()
     parent = MagicMock()
     curator_path = ""
@@ -92,6 +92,4 @@ def test_main(mocker):
     walker.assert_called_once_with(
         parent, depth_first=True, reload=True, stop_level="session"
     )
-    reporter.assert_called_once()
-    curator_mock.validate_container.assert_called_once()
-    curator_mock.curate_container.assert_called_once()
+    start_multiproc.assert_called_once_with(curator_mock, walker.return_value)

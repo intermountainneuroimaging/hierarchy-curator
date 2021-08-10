@@ -3,9 +3,9 @@ import argparse
 import copy
 import functools
 import logging
-import multiprocessing
 import sys
 import typing as t
+from multiprocessing import Lock, Manager, Process, managers
 from pathlib import Path
 
 import flywheel
@@ -60,8 +60,9 @@ def handle_breadth_first(
 def worker(
     curator: c.HierarchyCurator,
     work: t.List[t.Dict[str, str]],
-    lock: multiprocessing.Lock,
+    lock: Lock,
     worker_id: int,
+    fail: managers.EventProxy,
 ) -> None:
     """Target function for Process.
 
@@ -87,7 +88,9 @@ def worker(
                 work, local_curator, functools.partial(handle_breadth_first, log)
             )
     except Exception as e:  # pylint: disable=broad-except
-        log.critical("Could not finish curation, worker errored early", exc_info=True)
+        log.critical("Could not finish curation, worker errored early.", exc_info=True)
+        # Raise SystemExit(99) to "return" value of 99 (special error)
+        fail.set()
 
 
 def main(
@@ -134,17 +137,18 @@ def start_multiproc(curator, root_walker):
     """
     # Main multiprocessing entrypoint
     log.info(f"Running in multi-process mode with {curator.config.workers} workers")
-    lock = multiprocessing.Lock()
+    lock = Lock()
+    manager = Manager()
+    fail = manager.Event()
     workers = curator.config.workers
     reporter_proc = None
     # Initialize reporter if in config
     if curator.config.report:
-        manager = multiprocessing.Manager()
         curator.reporter = reporters.AggregatedReporter(
             curator.config.path, format=curator.config.format, queue=manager.Queue()
         )
         # Logger process
-        reporter_proc = multiprocessing.Process(
+        reporter_proc = Process(
             target=curator.reporter.worker,
         )
         reporter_proc.start()
@@ -163,15 +167,27 @@ def start_multiproc(curator, root_walker):
     for i in range(workers):
         # Give each worker its assignments
         log.info(f"Initializing Worker {i}")
-        proc = multiprocessing.Process(
-            target=worker, args=(curator, distributions[i], lock, i), name=str(i)
+        proc = Process(
+            target=worker, args=(curator, distributions[i], lock, i, fail), name=str(i)
         )
         proc.start()
         worker_ps.append(proc)
     # Block until each process has completed
+    finished = False
+    while not finished:
+        if fail.is_set():
+            log.error(f"Worker failed early, killing other workers...")
+            for worker_p in worker_ps:
+                if worker_p.is_alive():
+                    worker_p.terminate()
+            finished = True
+        else:
+            if not any([worker_p.is_alive() for worker_p in worker_ps]):
+                finished = True
     for worker_p in worker_ps:
         worker_p.join()
-        log.info(f"Worker {worker_p.name} finished with exit code: {worker_p.exitcode}")
+        e_code = worker_p.exitcode
+        log.info(f"Worker {worker_p.name} finished with exit code: {e_code}")
     # If a reporter was instantiated, send it the termination signal.
     if reporter_proc:
         curator.reporter.write("END")
