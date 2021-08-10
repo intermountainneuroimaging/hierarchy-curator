@@ -1,4 +1,6 @@
-## Multiprocessing approach
+# Multiprocessing
+
+## Possible approaches
 
 The most straightforward approach would have been using one process to add containers to a `multiprocessing.Queue` and having a variable number of worker processes consume this queue and curate the containers in order.  Unfortunately, Flywheel containers aren't pickleable due to the SDK client being stored under each container so there is access to finders over child containers, etc.
 
@@ -42,22 +44,43 @@ If depth first, the worker function would loop through the containers it was giv
 If breadth first, the worker function would instantiate one local curator and walker, add all of the containers it was given to that walker and walk through breadth first.
 
 
-## Implementation
+# Implementation
+
 Even though approach two is harder to implement, it was the only one I could think of to guarentee execution order AND allow for information from higher up on the hierarchy to be persisted on the class.
 
+## Description
 
-### Child curator/SDK handling
+The main function of HierarchyCurator now does the following:
 
-The `HierarchyCurator` class now implements a custom `__deepcopy__` hook that shallow copies all attributes except the special `data` attribute. Therefore all child curators will refer to the same context/client and will have their own unique `data` attribute.
+1. Instantiates a reporter for the class under `self.reporter` if one was requested by `self.config.report = True` and starts it's worker process (See [Reporter](#Reporter) for description of reporter).
+2. Distributes the children of the top level container evenly amongst workers.
+3. Starts the workers
+4. Listens to the `fail` event and kills remaining worker processes if one fails. (See [Error Handling](#Errors) for more details)
+5. Send termination signal to the reporter if there is a reporter.
 
+## Child curator/SDK handling
 
-Additionally, the GearToolkit context has an additional `get_client()` method that is used to instantiate a client on the child curator.
+The `HierarchyCurator` class now implements a custom `__deepcopy__` hook that shallow copies all attributes except the special `data` attribute. Therefore all child curators will refer to the same context/client and will have their own unique `data` attribute.  Additionally, we get around pickling of the client by instantiating a new client from cached credentials with the gear toolkit `get_client()` method.
 
-
-### Traversal order:
+## Traversal order:
 
 __depth first__: Traversal order for depth-first should be reached if each container recieved by each worker instantiates another depth-first walker from that level
 __breadth first__: Traversal order for bread-first should be reached if all containers recieved by each worker are added to a single breadth-first walker from that level.
 
+## Reporter
 
+The reporter for multiprocessing works by storing a `QueueProxy` managed by a `multiprocessing.Manager` allowing it to be shared between processes.
+When a curator in one of the worker functions calls `self.reporter.append_log` behind the scenes, this actually pushes the log message to the `Queue`.  The reporter worker function then consumes
+values from this `Queue` and writes them to the output (thread-safe)
+
+## Errors
+
+Each worker function is passed an `EventProxy` managed by a `Manager`.  The main of the worker function is surrounded by a broad try-except.  When an uncaught exception is raised, the worker
+will log the exception, and set this flag.  In the main process, this flag is monitored, and if set, triggers the termination of all worker processes.
+
+## Additional inputs (I/O)
+
+The HierarchyCurator allows for passing in of multiple input files, and if multiple worker processes are trying to read one at the same time, it could cause issues.  Therefore
+a special `open_input` context manager should be used to read from an input.  This context manager requests a lock on `__enter__` and releases it on `__exit__` allowing only
+one worker process to read from the input at any given time.
 

@@ -8,8 +8,6 @@ acquisition, analysis and file containers.
 
 ## Description
 
-### Basic (single threaded) usage
-
 The Hierarchy curator walks _down_ the hierarchy breadth-first by default.  The gear can be launched from any level in the Flywheel Hierarchy and has access to every container below and including the run container.
 
 For example if the hierarchy curator is run from Subject level, the first container encountered when walking the hierarchy would be the Subject in which it was run, then it would walk to each session, then it would walk to each acquisition under those sessions, and finally each file under those acquisitions.
