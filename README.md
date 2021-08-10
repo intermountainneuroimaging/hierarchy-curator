@@ -1,3 +1,4 @@
+# Table of Contents
 [[_TOC_]]
 
 # Custom Hierarchy Curation Gear
