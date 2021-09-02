@@ -256,7 +256,7 @@ def test_curate_main_depth_first(fw_project, oneoff_curator, mocker, containers)
     will be fully curated before one worker starts on a session.
 
 
-    Becasue of this, running breadth-first in single process will differ
+    Because of this, running breadth-first in single process will differ
     slightly from breadth-first in multiprocess, which can be seen in the
     path order prints below.
 

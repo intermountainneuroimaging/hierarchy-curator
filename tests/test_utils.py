@@ -69,4 +69,3 @@ def test_make_walker(mocker):
     w_patch.assert_called_once_with(
         container, depth_first=True, reload=True, stop_level="project"
     )
-    _ = make_walker(MagicMock(), MagicMock())

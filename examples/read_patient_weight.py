@@ -36,4 +36,5 @@ class Curator(curator.HierarchyCurator):
                             except:
                                 pass
                     log.info("Done")
-                log.warning("Not a zip")
+                else:
+                    log.warning("Not a zip")

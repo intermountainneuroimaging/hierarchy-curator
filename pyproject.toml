@@ -15,7 +15,8 @@ license = "MIT"
     pydicom = "^2.1.1"
     pypng = "^0.0.20"
     fw-file = "^0.7"
-    flywheel-gear-toolkit = "^0.3.4"
+    flywheel-gear-toolkit = "^0.4.0"
+    flywheel-sdk = "^15.8.0"
 
     [tool.poetry.dev-dependencies]
     pytest = "^6.1.2"
@@ -29,10 +30,10 @@ license = "MIT"
     isort = "^5.6.4"
     rpdb = "^0.1.6"
     remote-pdb = "^2.1.0"
-    fw-gear-testing = "^0.2.4"
     dill = "^0.3.4"
     jupyter-client = "6.1.11"
     jupyter = "^1.0.0"
+    docker = "^5.0.2"
 
 
 [tool.pytest.ini_options]

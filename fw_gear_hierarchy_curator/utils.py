@@ -13,7 +13,7 @@ log = logging.getLogger(__name__)
 def container_to_pickleable_dict(container: datatypes.Container) -> t.Dict[str, str]:
     """Take a flywheel container and transform into
     a simple dictionary that can be pickled for
-    multiprocessing.
+    multiprocessing, excluding flywheel SDK.
     """
     val = {
         "id": container.id,

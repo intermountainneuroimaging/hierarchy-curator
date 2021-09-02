@@ -31,11 +31,11 @@ class Curator(HierarchyCurator):
         super().__init__(**kwargs)
         # By setting the callback to `self.validate_container`
         #   we tell the walker to call this whenever it's going
-        #   to queue up a containers children.  `self.validate_container`
+        #   to queue up a container's children.  `self.validate_container`
         #   returns `True` by default, unless one of the
         #   `self.validate_<container> methods has been implemented.  In this
         #   case we have implemented `self.validate_subject`, so when this
-        #   function returns `True`, the walker will queue that subjects
+        #   function returns `True`, the walker will queue that subject's
         #   children, when it returns `False` it will not, effectively removing
         #   a branch of the Flyhweel Hierarchy Tree.
         self.config.callback = self.validate_container
