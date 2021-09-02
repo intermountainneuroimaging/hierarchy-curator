@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "fw-gear-hierarchy-curator"
-version = "1.1.0"
+version = "2.0.0-rc.1"
 description = "Custom hierarchy curation gear"
 authors = ["Flywheel <support@flywheel.io>"]
 license = "MIT"
@@ -15,9 +15,8 @@ license = "MIT"
     pydicom = "^2.1.1"
     pypng = "^0.0.20"
     fw-file = "^0.7"
-    flywheel-gear-toolkit = "^0.3"
-    backoff = "^1.11.1"
-
+    flywheel-gear-toolkit = "^0.4.0"
+    flywheel-sdk = "^15.8.0"
 
     [tool.poetry.dev-dependencies]
     pytest = "^6.1.2"
@@ -29,12 +28,18 @@ license = "MIT"
     pydocstyle = "^5.1.1"
     black = "^20.8b1"
     isort = "^5.6.4"
+    rpdb = "^0.1.6"
+    remote-pdb = "^2.1.0"
+    dill = "^0.3.4"
+    jupyter-client = "6.1.11"
+    jupyter = "^1.0.0"
+    docker = "^5.0.2"
 
 
 [tool.pytest.ini_options]
     minversion = "6.0"
     addopts = [
-      "--cov=flywheel_hierarchy_curator",
+      "--cov=fw_gear_hierarchy_curator",
       "--cov-report=html",
     ]
     testpaths = [
