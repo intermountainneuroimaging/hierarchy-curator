@@ -9,6 +9,7 @@ from multiprocessing import Lock, Manager, Process, managers
 from pathlib import Path
 
 import flywheel
+import flywheel_gear_toolkit
 
 # import multiprocessing_logging
 from flywheel_gear_toolkit import GearToolkitContext
@@ -116,6 +117,10 @@ def main(
         "Initializing walker over hierarchy starting at "
         f"{parent.container_type} {parent.label or parent.code}"
     )
+    if getattr(curator, "legacy", False):
+        log.info("Running legacy (single-threaded)")
+        run_legacy(context, curator, parent)
+        return
     root_walker = walker.Walker(
         parent,
         depth_first=curator.config.depth_first,
@@ -194,31 +199,9 @@ def start_multiproc(curator, root_walker):
         reporter_proc.join()
 
 
-if __name__ == "__main__":  # pragma: no cover
-    parser = argparse.ArgumentParser(description="Argument parser for curation")
-    parser.add_argument(
-        "--api-key",
-        default=None,
-        help="Pass in api key if not logged in with cli",
-    )
-    parser.add_argument(
-        "--curator", "-c", required=True, help="path to curator implementation"
-    )
-    parser.add_argument("--additional-input-one", help="Input file one")
-    parser.add_argument("--additional-input-two", help="Input file two")
-    parser.add_argument("--additional-input-three", help="Input file three")
-    parser.add_argument("path", help="The resolver path to the project")
-
-    args = parser.parse_args()
-    client = flywheel.Client(args.api_key)
-    context = GearToolkitContext()
-    context.client = client
-    project = client.lookup(args.path)
-    main(
-        context,
-        project,
-        args.curator,
-        additional_input_one=args.additional_input_one,
-        additional_input_two=args.additional_input_two,
-        additional_input_three=args.additional_input_three,
-    )
+def run_legacy(
+    context: GearToolkitContext,
+    curator: flywheel_gear_toolkit.utils.curator.HierarchyCurator,
+    parent: datatypes.Container,
+) -> None:
+    pass
