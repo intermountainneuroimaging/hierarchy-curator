@@ -12,7 +12,7 @@ __Enhancements:__
   * Configuration options
   * callback usage
   * validate_<container> methods.
-* Add ability to enable multi-threading on `curate` methods.
+* Add ability to run gear in a multi-threaded manner.
 
 __Maintenance:__
 
