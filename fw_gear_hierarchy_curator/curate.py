@@ -204,4 +204,14 @@ def run_legacy(
     curator: flywheel_gear_toolkit.utils.curator.HierarchyCurator,
     parent: datatypes.Container,
 ) -> None:
-    pass
+    setattr(curator, "input_file_one", curator.additional_input_one)
+    setattr(curator, "input_file_two", curator.additional_input_two)
+    setattr(curator, "input_file_three", curator.additional_input_three)
+    # TODO: Rename input_file_one to additional_input_one, etc.
+    project_walker = walker.Walker(parent, depth_first=curator.depth_first)
+    try:  # pragma: no cover
+        for container in project_walker.walk():
+            curator.curate_container(container)  # Tested in gear toolkit
+    except Exception:  # pylint: disable=broad-except pragma: no cover
+        log.error("Uncaught Exception", exc_info=True)
+        sys.exit(1)
