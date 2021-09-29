@@ -1,14 +1,8 @@
 import logging
-import math
-import sys
-from collections import namedtuple
-from datetime import date, datetime, timedelta
 
 import flywheel
 import pandas as pd
-import pytz
-
-import curator  # # TODO Comment out for debugging.
+from flywheel_gear_toolkit.utils.config import HierarchyCurator
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 log = logging.getLogger("root")
@@ -35,21 +29,24 @@ def is_not_server_error(exception):
     return False if (exception.status >= 500) else True
 
 
-class Curator(curator.Curator):
-    """Curator class for test-study"""
-
+class Curator(HierarchyCurator):
     def __init__(self):
-        super(Curator, self).__init__(depth_first=True)
+        # curate depth first
+        self.config.depth_first = True
+        # Don't queue up session children
+        self.config.stop_level = "session"
 
     def curate_project(self, project):
         # Create patient and session info dictionaries
-        self.patient_info_dict = {}
-        self.session_info_dict = {}
-        self.index_file = None
-
-        # CSV with first three columns patientId, screeningId, and siteId
-        df = pd.read_csv(self.input_file_one)
-        self.index_file = df
+        # For use in curating subjects/sessions
+        # Store under self.data
+        self.data = {"subject_info": {}, "session_info": {}, "index_file": {}}
+        df = None
+        # Switch to use self.open_file to be thread-safe
+        # Switch from input_file_one to additional_input_one
+        with self.open_file(self.additional_input_one) as fp:
+            df = pd.read_csv(fp)
+            self.data["index_file"] = df
 
         # Set project custom information.
         log.info(
@@ -57,10 +54,10 @@ class Curator(curator.Curator):
             df.iloc[0].studyId,
             df.iloc[0].studyName,
         )
+        # Tasks 1a and 1b
         project.update_info(
             {"StudyID": df.iloc[0].STUDY_ID, "StudyName": df.iloc[0].STUDY_NAME}
         )
-
         # Extract patient (subject) data.
         group_by_patient = df.groupby("patientId")
 
@@ -72,7 +69,7 @@ class Curator(curator.Curator):
             # Choose site ID from the first visit.
             site_id = df.loc[pd.to_datetime(group.date).idxmin(), "siteId"]
 
-            self.patient_info_dict[p_id] = {
+            self.data["subject_info"][p_id] = {
                 "patientId": p_id,
                 "screeningId": s_id,
                 "siteId": site_id,
@@ -81,7 +78,7 @@ class Curator(curator.Curator):
             by_visit = group.groupby(["visit", "date"])
             for visit_id, v_group in by_visit:
                 session_key = p_id + "-" + visit_id
-                self.session_info_dict[visit_id] = {
+                self.data["session_info"][visit_id] = {
                     "bp_d": v_group.bp_d,
                     "bp_s": v_group.bp_s,
                     "hr": v_group.hr,
@@ -95,9 +92,8 @@ class Curator(curator.Curator):
         giveup=is_not_server_error,
     )
     def curate_subject(self, subject):
-
-        if subject.label in self.patient_info_dict:
-            pat_info = self.patient_info_dict.get(subject.label)
+        if subject.label in self.data["subject_info"]:
+            pat_info = self.data["subject_info"].get(subject.label)
             log.info("Updating subject %s", pat_info["patientId"])
             subject.update(type="human")
             subject.update_info(
@@ -116,8 +112,8 @@ class Curator(curator.Curator):
     )
     def curate_session(self, session):
         session_key = session.subject.label + "-" + session.label
-        if session_key in self.session_info_dict:
-            session_info = self.session_info_dict.get(session_key)
+        if session_key in self.data["session_info"]:
+            session_info = self.data["session_info"].get(session_key)
             log.info("Updating session %s", session_key)
             tstamp = session_info["timestamp"]
             session.update(timestamp=tstamp)
@@ -129,12 +125,3 @@ class Curator(curator.Curator):
             session.update_info(session_dict)
             for acq in session.acquisitions():
                 acq.update(timestamp=tstamp)
-
-    def curate_acquisition(self, acquisition):
-        pass
-
-    def curate_analysis(self, analysis):
-        pass
-
-    def curate_file(self, file_):
-        pass
