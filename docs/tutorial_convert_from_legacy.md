@@ -3,7 +3,7 @@
 ## Objective and task definition
 
 The objective of this script is to
-take in a project CSV that and update the hierarchy according to that CSV.
+take in a project CSV and update the hierarchy according to that CSV.
 
 The CSV has the columns:
 
@@ -133,7 +133,6 @@ def curate_project(self, project):
     project.update_info(
         {"StudyID": df.iloc[0].STUDY_ID, "StudyName": df.iloc[0].STUDY_NAME}
     )
-`
     # Extract patient (subject) data.
     group_by_patient = df.groupby("patientId")
 
@@ -202,7 +201,7 @@ def curate_subject(self, subject):
 
 ### Session level
 
-The existing script uses this function to curate the subject:
+The existing script uses this function to curate the session:
 
 ```python
 def curate_session(self, session):
@@ -234,7 +233,7 @@ curating down to the session level, here is how we could do either
 
 In order to move the functionality to `curate_acquisition`, we need to store
 the session timestamp on the class in `curate_session` and then ensure we
-are curating depth-first so that the current value is guarenteed to be the
+are curating depth-first so that the current value is guaranteed to be the
 session parent of that acquisition:
 
 ```python
@@ -295,8 +294,8 @@ of sessions aren't queued.
 
 ### Backoff
 
-You may notice there are decorators over most functions, these are
-essentially mechanisms to retry on any transient errors:
+You may notice there are decorators over most functions; these are
+essentially mechanisms to retry on any transient errors.
 
 ```python
 def is_not_server_error(exception):
@@ -320,7 +319,7 @@ def is_not_server_error(exception):
 
 This decorator retries a given function if a Flywheel API error is thrown,
 but only if it is a transient error.  If it is a user error, it will
-immediately give up.  This mechanism makes the script robust running when
+immediately give up.  This mechanism makes the script robust when
 there are many gears running, or the system is under high load.
 
 ### Delete unused curate methods
