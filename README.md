@@ -239,6 +239,9 @@ class Curator(HierarchyCurator):
         super().__init__(**kwargs, extra_packages=["tqdm==x.y.z"])
 ```
 
+NOTE:  These installs only work if you import the dependencies from within a function
+top level imports will NOT work.
+
 ### Breadth-first vs. depth-first traversal
 
 By default the walker used in HierarchyCuratror uses depth-first traversal, this

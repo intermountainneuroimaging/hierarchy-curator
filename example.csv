@@ -1,0 +1,19 @@
+studyId,studyName,patientId,siteId,screeningId,visit,date,bp_d,bp_s,hr,timestamp
+test1,test1Name,splitter,1,0,3.0.0,01/01/2020,10,11,45,10:00:01 AM
+test1,test1Name,metadata_extraction,1,1,ptd,01/02/2020,11,12,46,10:00:02 AM
+test1,test1Name,dcm2niix-test,1,2,test,01/03/2020,12,13,47,10:00:03 AM
+test1,test1Name,sub-01,1,3,test,01/04/2020,13,14,48,10:00:04 AM
+test1,test1Name,sub-01,1,4,ses-01,01/05/2020,14,15,49,10:00:05 AM
+test1,test1Name,deid-export,1,5,chop-test,01/06/2020,15,16,50,10:00:06 AM
+test1,test1Name,10462@thwjames_OpenScience,1,6,2020-01-22 14_29_46,01/07/2020,16,17,51,10:00:07 AM
+test1,test1Name,icometrix,1,7,icobrain2,01/08/2020,17,18,52,10:00:08 AM
+test1,test1Name,icometrix,1,8,icobrain1,01/09/2020,18,19,53,10:00:09 AM
+test1,test1Name,icometrix,1,9,icobrain1,01/10/2020,19,20,54,10:00:10 AM
+test1,test1Name,icometrix,1,10,0,01/11/2020,20,21,55,10:00:11 AM
+test1,test1Name,chop,1,11,dicom-mr-classifier-test,01/12/2020,21,22,56,10:00:12 AM
+test1,test1Name,levitas_Tutorial,1,12,10462@thwjames_OpenScience,01/13/2020,22,23,57,10:00:13 AM
+test1,test1Name,juelich-dicom-mr-class,1,13,unknown,01/14/2020,23,24,58,10:00:14 AM
+test1,test1Name,juelich-dicom-mr-class,1,14,other,01/15/2020,24,25,59,10:00:15 AM
+test1,test1Name,bch,1,15,uid-too-short,01/16/2020,25,26,60,10:00:16 AM
+test1,test1Name,file-classifier,1,16,test-01,01/17/2020,26,27,61,10:00:17 AM
+test1,test1Name,dicom-fixer,1,17,failed,01/18/2020,27,28,62,10:00:18 AM

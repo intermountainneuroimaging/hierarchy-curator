@@ -2,20 +2,12 @@ import logging
 
 import flywheel
 import pandas as pd
-from flywheel_gear_toolkit.utils.config import HierarchyCurator
+from flywheel_gear_toolkit.utils.curator import HierarchyCurator
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 log = logging.getLogger("root")
 
-try:
-    import backoff
-
-except ImportError:
-    log.info("Trying to install required module: backoff")
-    import os
-
-    os.system("python -m pip install backoff")
-    import backoff
+import backoff
 
 
 def is_not_server_error(exception):
@@ -30,7 +22,9 @@ def is_not_server_error(exception):
 
 
 class Curator(HierarchyCurator):
-    def __init__(self):
+    def __init__(self, **kwargs):
+        # Install backoff
+        super().__init__(**kwargs, extra_packages=["backoff"])
         # curate depth first
         self.config.depth_first = True
         # Don't queue up session children
@@ -42,9 +36,9 @@ class Curator(HierarchyCurator):
         # Store under self.data
         self.data = {"subject_info": {}, "session_info": {}, "index_file": {}}
         df = None
-        # Switch to use self.open_file to be thread-safe
+        # Switch to use self.open_input to be thread-safe
         # Switch from input_file_one to additional_input_one
-        with self.open_file(self.additional_input_one) as fp:
+        with self.open_input(self.additional_input_one) as fp:
             df = pd.read_csv(fp)
             self.data["index_file"] = df
 
@@ -56,7 +50,7 @@ class Curator(HierarchyCurator):
         )
         # Tasks 1a and 1b
         project.update_info(
-            {"StudyID": df.iloc[0].STUDY_ID, "StudyName": df.iloc[0].STUDY_NAME}
+            {"StudyID": df.iloc[0].studyId, "StudyName": df.iloc[0].studyName}
         )
         # Extract patient (subject) data.
         group_by_patient = df.groupby("patientId")
@@ -76,7 +70,7 @@ class Curator(HierarchyCurator):
             }
             # Extract visit (session) information
             by_visit = group.groupby(["visit", "date"])
-            for visit_id, v_group in by_visit:
+            for (visit_id, date), v_group in by_visit:
                 session_key = p_id + "-" + visit_id
                 self.data["session_info"][visit_id] = {
                     "bp_d": v_group.bp_d,

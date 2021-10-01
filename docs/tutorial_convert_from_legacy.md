@@ -35,8 +35,10 @@ So our generalized list of tasks are:
 
 ## Translate from legacy to new version
 
-Let's look at how the [legacy-script](./examples/legacy-script.py)
-accomplishes these tasks:
+We'll need to update the script with the changes defined in the
+[README](../README.md#converting-from-legacy-script-to-new-format)
+in order to translate to the new format, but first let's look at how the
+[legacy-script](./examples/legacy-script.py) accomplishes these tasks:
 
 ### Project level
 
@@ -234,15 +236,21 @@ curating down to the session level, here is how we could do either
 In order to move the functionality to `curate_acquisition`, we need to store
 the session timestamp on the class in `curate_session` and then ensure we
 are curating depth-first so that the current value is guaranteed to be the
-session parent of that acquisition:
+session parent of that acquisition.
+
+Since we are curating depth-first, we can set a variable timestamp
+on `self.data` and then have access to that value in the acquisitions
+under the session for which we've set `self.data['timestamp']`
 
 ```python
+# Configure walker for depth first
 def __init__(self, **kwargs):
-   super().__init__(**kwargs)
-   self.config.depth_first = True
+    super().__init__(**kwargs)
+    self.config.depth_first = True
 
 # ...
 
+# get acq timestamp from its parent session
 def curate_session(self, session):
     session_key = session.subject.label + "-" + session.label
     if session_key in self.session_info_dict:
@@ -256,10 +264,6 @@ def curate_acquisition(self, acquisition):
     if self.data['timestamp']:
         acquisition.update(timestamp=self.data['timestamp'])
 ```
-
-Since we are curating depth-first, we can set a variable timestamp
-on `self.data` and then have access to that value in the acquisitions
-under the session for which we've set `self.data['timestamp']`
 
 ### Keep functionality in `curate_session` but stop after session level
 
@@ -292,10 +296,45 @@ of sessions aren't queued.
 
 ## Other changes and best practices
 
+### Installing extra packages
+
+With the new format you can install extra packages in the constructor and them
+import them from a function, i.e.
+
+```python
+class Curator(HierarchyCurator):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs, extra_packages=["my-module"])
+
+    def curate_session(session):
+        import my_module
+        # ...
+```
+
 ### Backoff
 
 You may notice there are decorators over most functions; these are
 essentially mechanisms to retry on any transient errors.
+
+This decorator retries a given function if a Flywheel API error is thrown,
+but only if it is a transient error.  If it is a user error, it will
+immediately give up.  This mechanism makes the script robust when
+there are many gears running, or the system is under high load.
+
+```python
+# ...
+@backoff.on_exception(
+    backoff.expo,
+    flywheel.rest.ApiException,
+    max_time=300,
+    giveup=is_not_server_error,
+)
+```
+
+We pass an argument `giveup`, which is a function that receives
+the exception and decides whether or not to "give up" retrying.  Generally,
+we want to give up if it is _not_ a transient server error, i.e. if there is
+conflict, or another user error.  We can define this function like so:
 
 ```python
 def is_not_server_error(exception):
@@ -307,20 +346,7 @@ def is_not_server_error(exception):
         bool: whether to raise rather than backing off.
     """
     return False if (exception.status >= 500) else True
-
-# ...
-@backoff.on_exception(
-    backoff.expo,
-    flywheel.rest.ApiException,
-    max_time=300,
-    giveup=is_not_server_error,
-)
 ```
-
-This decorator retries a given function if a Flywheel API error is thrown,
-but only if it is a transient error.  If it is a user error, it will
-immediately give up.  This mechanism makes the script robust when
-there are many gears running, or the system is under high load.
 
 ### Delete unused curate methods
 
@@ -352,4 +378,4 @@ class Curator(HierarchyCurator):
 
 ## End
 
-That's it!  Make sure you check out the [final script](./examples/legacy-translated.py)
+That's it!  For reference, check out the [final script](./examples/legacy-translated.py)

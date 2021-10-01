@@ -17,6 +17,7 @@ license = "MIT"
     fw-file = "^0.7"
     flywheel-gear-toolkit = "^0.4.0"
     flywheel-sdk = "^15.8.0"
+    backoff = "^1.11.1"
 
     [tool.poetry.dev-dependencies]
     pytest = "^6.1.2"
