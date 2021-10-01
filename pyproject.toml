@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "fw-gear-hierarchy-curator"
-version = "2.0.0"
+version = "2.1.0"
 description = "Custom hierarchy curation gear"
 authors = ["Flywheel <support@flywheel.io>"]
 license = "MIT"
