@@ -1,7 +1,9 @@
-# Table of Contents
+# Custom Hierarchy Curation Gear
+
+## Table of Contents
+
 [[_TOC_]]
 
-# Custom Hierarchy Curation Gear
 There are a lot of cases where specific logic must be used to curate a given
 project.  This hierarchy curation gear is able to take an implementation of
 the HierarchyCurator Class (provided as an input file (e.g., curator.py)),
@@ -50,19 +52,19 @@ class Curator(HierarchyCurator):
 
 ### Gear Inputs
 
-#### Required
+#### Required Inputs
 
 * **curator**: Python script (e.g. curator.py) that implemented the
   `HierarchyCurator` class.  More details at the [Flywheel Gear Toolkit
   docs](https://gear-toolkit.readthedocs.io/en/latest/utils.html#curator).
 
-#### Optional
+#### Optional Inputs
 
 * **additional_input_one**: Additional file to be used by the curator.
 * **additional_input_two**: Additional file to be used by the curator.
 * **additional_input_three**: Additional file to be used by the curator.
 
-> NOTE: See [Input Files)(#input-files) for details on how to access inputs.
+> NOTE: See [Input Files](#input-files) for details on how to access inputs.
 
 ## HierarchyCurator
 
@@ -74,7 +76,7 @@ options are:
 
 * `workers` (integer): Number of multithreaded workers to use (default 1).
 * `depth_first` (boolean): Walks depth-first if True and breadth-first if False
-  (default True) (See 
+  (default True) (See
   [Breadth vs. depth-first traversal](#breadth-first-vs-depth-first-traversal))
 * `stop_level` (str): Container level to stop walking at (Default None)
 * `callback` (function): Optional callback to decide whether or not to queue a
@@ -86,7 +88,7 @@ options are:
   `/flywheel/v0/output/output.csv`).
 
 The curator class must be defined in a python script which is provided to the gear
-as an input. This class must be named `Curator` and must inherit from 
+as an input. This class must be named `Curator` and must inherit from
 `flywheel_gear_toolkit.utils.curators.HierarchyCurator` class:
 
 ```python
@@ -95,7 +97,9 @@ from flywheel_gear_toolkit.utils.curator import HierarchyCurator
 class Curator(HierarchyCurator):
     ...
 ```
+
 ### Walker callback The walker callback (configured at `self.config.callback`)
+
 is a function that accepts a container and returns a boolean.  It has the same
 signature as `validate_container()`.  When walking the hierarchy, this function
 will be called in between selecting the next container and queueing its
@@ -235,6 +239,9 @@ class Curator(HierarchyCurator):
         super().__init__(**kwargs, extra_packages=["tqdm==x.y.z"])
 ```
 
+NOTE:  These installs only work if you import the dependencies from within a function
+top level imports will NOT work.
+
 ### Breadth-first vs. depth-first traversal
 
 By default the walker used in HierarchyCuratror uses depth-first traversal, this
@@ -311,6 +318,31 @@ sub-01                       1.
    └── acq-func1             7.
        └── task1.dicom.zip   11.
 ```
+
+## Converting from legacy script to new format
+
+There are a few things you'll need to change to convert from a legacy script to
+the new format (if you want the new features):
+
+1. Import: Change the import from `import curator` to
+`from flywheel_gear_toolkit.utils.curator import HierarchyCurator`
+see [HierarchyCurator](#hierarchycurator) for more details.
+2. Subclass: Change the parent class for `Curator` from `Curator` to
+`HierarchyCurator`
+3. Input files.  See [Optional Inputs](#optional-inputs), and
+[Input Files](#input-files) for more details.
+    a. Change all instances of `additional_input_<num>` to `input_file_<num>`
+    b. Change all read's of input files from `with open()` to with `self.open_input()`,
+    this is thread safe.
+4. Class config: Change configuration values from passing them to the super
+constructor (e.g. `super().__init__(depth_first=True)`) to setting the
+`self.config` object, see [Curator Configuration](#curator-configuration)
+5. Reporting: Change instantiating report to simply setting `self.config.report`
+to `True` and possibly setting the reporting format under `self.config.format`
+see [Curator Configuration](#curator-configuration).
+
+Also see the tutorial for a step-by-step walkthrough:
+[Converting from legacy](./docs/tutorial_convert_from_legacy.md)
 
 ## More information
 

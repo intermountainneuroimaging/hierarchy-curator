@@ -77,6 +77,7 @@ def test_main(mocker):
     start_multiproc = mocker.patch("fw_gear_hierarchy_curator.curate.start_multiproc")
     get_curator = mocker.patch("fw_gear_hierarchy_curator.curate.c.get_curator")
     curator_mock = MagicMock()
+    curator_mock.legacy = False
     curator_mock.config.depth_first = True
     curator_mock.config.reload = True
     curator_mock.config.stop_level = "session"
