@@ -273,7 +273,7 @@ from flywheel_gear_toolkit.utils import install_requirements
 class Curator(HierarchyCurator):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.depth_first = True
+        self.config.depth_first = True
 ```
 
 Then your traversal order would be as follows:
@@ -300,7 +300,7 @@ from flywheel_gear_toolkit.utils import install_requirements
 class Curator(HierarchyCurator):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.depth_first = False
+        self.config.depth_first = False
 ```
 
 your traversal order would be:
