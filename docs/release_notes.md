@@ -1,5 +1,11 @@
 # Release Notes
 
+## 2.0.1
+
+__Maintenance__:
+
+* Restore default curator performing `reload()` on each container
+
 ## v2.0.0
 
 __Enhancements:__
