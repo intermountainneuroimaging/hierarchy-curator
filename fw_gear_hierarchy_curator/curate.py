@@ -99,7 +99,7 @@ def main(
     parent: datatypes.Container,
     curator_path: datatypes.PathLike,
     **kwargs,
-):
+) -> int:
     """Curates a flywheel project using a curator.
 
     Args:
@@ -119,19 +119,19 @@ def main(
     )
     if getattr(curator, "legacy", False):
         log.info("Running legacy (single-threaded)")
-        run_legacy(context, curator, parent)
-        return
+        res = run_legacy(context, curator, parent)
+        return res
     root_walker = walker.Walker(
         parent,
         depth_first=curator.config.depth_first,
         reload=curator.config.reload,
         stop_level=curator.config.stop_level,
     )
-    start_multiproc(curator, root_walker)
+    return start_multiproc(curator, root_walker)
 
 
 # See docs/multiprocessing.md for details on why this implementation was chosen
-def start_multiproc(curator, root_walker):
+def start_multiproc(curator, root_walker) -> int:
     """Run hierarchy curator in parallel.
 
     1. Set up
@@ -140,6 +140,7 @@ def start_multiproc(curator, root_walker):
     4. Run each worker process
     5. Clean up
     """
+    r_code = 0
     # Main multiprocessing entrypoint
     log.info(f"Running in multi-process mode with {curator.config.workers} workers")
     lock = Lock()
@@ -182,6 +183,7 @@ def start_multiproc(curator, root_walker):
     while not finished:
         if fail.is_set():
             log.error(f"Worker failed early, killing other workers...")
+            r_code = 1
             for worker_p in worker_ps:
                 if worker_p.is_alive():
                     worker_p.terminate()
@@ -197,13 +199,14 @@ def start_multiproc(curator, root_walker):
     if reporter_proc:
         curator.reporter.write("END")
         reporter_proc.join()
+    return r_code
 
 
 def run_legacy(
     context: GearToolkitContext,
     curator: flywheel_gear_toolkit.utils.curator.HierarchyCurator,
     parent: datatypes.Container,
-) -> None:
+) -> int:
     setattr(curator, "input_file_one", curator.additional_input_one)
     setattr(curator, "input_file_two", curator.additional_input_two)
     setattr(curator, "input_file_three", curator.additional_input_three)
@@ -214,4 +217,5 @@ def run_legacy(
             curator.curate_container(container)  # Tested in gear toolkit
     except Exception:  # pylint: disable=broad-except pragma: no cover
         log.error("Uncaught Exception", exc_info=True)
-        sys.exit(1)
+        return 1
+    return 0
