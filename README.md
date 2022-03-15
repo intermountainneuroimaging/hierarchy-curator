@@ -199,7 +199,7 @@ manager (See below).
 
 The input files can be accessed within the curator class. The path to the input
 files are stored within the attribute named `additional_input_one`,
-`input_file_two` and `additional_input_three`.
+`additional_input_two` and `additional_input_three`.
 
 Below is an example of a Project curation method using the first input file:
 
@@ -330,10 +330,10 @@ see [HierarchyCurator](#hierarchycurator) for more details.
 2. Subclass: Change the parent class for `Curator` from `Curator` to
 `HierarchyCurator`
 3. Input files.  See [Optional Inputs](#optional-inputs), and
-[Input Files](#input-files) for more details.
-    a. Change all instances of `additional_input_<num>` to `input_file_<num>`
+[Input Files](#input-files) for more details.  
+    a. Change all instances of `input_file_<num>` to `additional_input_<num>`  
     b. Change all read's of input files from `with open()` to with `self.open_input()`,
-    this is thread safe.
+    this is thread safe.  
 4. Class config: Change configuration values from passing them to the super
 constructor (e.g. `super().__init__(depth_first=True)`) to setting the
 `self.config` object, see [Curator Configuration](#curator-configuration)
