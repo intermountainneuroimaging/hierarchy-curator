@@ -1,5 +1,12 @@
 # Release Notes
 
+## 2.1.2
+
+__Bug__:
+
+* Enforce default curator `reload()` for legacy scripts
+* `reload()` is also performed on `files` as well as containers by default
+
 ## 2.1.1
 
 __Maintenance__:
