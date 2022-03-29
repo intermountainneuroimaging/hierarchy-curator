@@ -211,7 +211,7 @@ def run_legacy(
     setattr(curator, "input_file_two", curator.additional_input_two)
     setattr(curator, "input_file_three", curator.additional_input_three)
     # TODO: Rename input_file_one to additional_input_one, etc.
-    project_walker = walker.Walker(parent, depth_first=curator.depth_first)
+    project_walker = walker.Walker(parent, depth_first=curator.depth_first, reload=True)
     try:  # pragma: no cover
         for container in project_walker.walk():
             curator.curate_container(container)  # Tested in gear toolkit

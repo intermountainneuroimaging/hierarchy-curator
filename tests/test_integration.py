@@ -222,6 +222,11 @@ def test_curate_errors(fw_project, oneoff_curator, mocker, containers):
 def test_curate_main_depth_first(fw_project, oneoff_curator, mocker, containers):
     project = fw_project(n_subs=2)
     curator_path = ASSETS_DIR / "dummy_curator.py"
+    for subject in project.subjects():
+        for session in subject.sessions():
+            for acq in session.acquisitions():
+                for file_ in acq.files:
+                    file_.reload = lambda: file_
 
     get_curator_patch = mocker.patch("fw_gear_hierarchy_curator.curate.c.get_curator")
 
@@ -277,6 +282,13 @@ def test_curate_main_breadth_first(
 ):
     project = fw_project(n_subs=2)
     curator_path = ASSETS_DIR / "dummy_curator.py"
+    # Hack to get around `reload` not being defined in
+    # flywheel_gear_toolkit.testing.hierarchy.MockFileEntry
+    for subject in project.subjects():
+        for session in subject.sessions():
+            for acq in session.acquisitions():
+                for file_ in acq.files:
+                    file_.reload = lambda: file_
 
     get_curator_patch = mocker.patch("fw_gear_hierarchy_curator.curate.c.get_curator")
 
