@@ -18,6 +18,7 @@ def test_container_to_pickleable_dict():
     assert out["id"] == "test"
     file = flywheel.FileEntry(file_id="test")
     file._parent = flywheel.Acquisition(id="test")
+    file.parent_ref = {"type": "acquisition", "id": "test"}
     out = container_to_pickleable_dict(file)
     assert out["container_type"] == "file"
     assert out["id"] == "test"
