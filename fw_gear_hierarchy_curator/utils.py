@@ -22,8 +22,8 @@ def container_to_pickleable_dict(container: datatypes.Container) -> t.Dict[str, 
     if container.container_type == "file":
         if hasattr(container, "file_id"):
             val["id"] = container.file_id
-        val["parent_type"] = container.parent.container_type
-        val["parent_id"] = container.parent.id
+        val["parent_type"] = container.parent_ref.get("type")
+        val["parent_id"] = container.parent_ref.get("id")
     return val
 
 
