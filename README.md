@@ -113,8 +113,7 @@ sessions whose label don't match a regex:
 
 def to_queue(container):
     regex = re.compile(r'^trial-\d+$')
-    if container.type == "session":
-        if regex.match(container.label) is None:
+    if container.type == "session" and regex.match(container.label) is None:
             return False
     return True
 
