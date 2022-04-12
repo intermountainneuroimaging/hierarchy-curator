@@ -113,7 +113,7 @@ sessions whose label don't match a regex:
 class Curator(HierarchyCurator):
     def __init__(self):
         super().__init__(self)
-        self.config.callback = self.validate_container
+        self.config.callback = self.validate_session
 
     def validate_session(session):
         regex = re.compile(r'^trial-\d+$')
