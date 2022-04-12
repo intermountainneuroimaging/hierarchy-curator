@@ -117,7 +117,7 @@ class Curator(HierarchyCurator):
 
     def validate_container(container):
         regex = re.compile(r'^trial-\d+$')
-        if container.type == "session" and regex.match(session.label):
+        if container.type == "session" and regex.match(container.label):
             return True
         return False
 
