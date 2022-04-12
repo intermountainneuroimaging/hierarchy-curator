@@ -106,18 +106,18 @@ will be called in between selecting the next container and queueing its
 children, so you can use this function to dynamically decide if you want to
 queue a given container's children.
 
-For example, you can write a custom `validate_session()` to exclude children of
+For example, you can write a custom `validate_container()` to exclude children of
 sessions whose label don't match a regex:
 
 ```python
 class Curator(HierarchyCurator):
     def __init__(self):
         super().__init__(self)
-        self.config.callback = self.validate_session
+        self.config.callback = self.validate_container
 
-    def validate_session(session):
+    def validate_container(container):
         regex = re.compile(r'^trial-\d+$')
-        if regex.match(session.label):
+        if container.type == "session" and regex.match(session.label):
             return True
         return False
 
