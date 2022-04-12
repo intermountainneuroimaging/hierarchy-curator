@@ -1,14 +1,17 @@
 repos:
-  - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v3.4.0
+  - repo: https://gitlab.com/flywheel-io/tools/etc/qa-ci
+    rev: 5cae6c39eb1918b88734372dccd56cb5f758edbb
     hooks:
-    - id: check-json
+      - id: test:flywheel-lint
+      #- id: test:helm-check
+      - id: test:pre-commit:isort
+      #- id: test:pre-commit:mypy
+      #- id: test:pre-commit:pylint
+      #- id: test:pre-commit:pylint-tests
+      - id: test:pre-commit:pytest
+      - id: publish:docker:test
 
   - repo: https://gitlab.com/flywheel-io/flywheel-apps/utils/pre-commit-hooks
-    rev: master
+    rev: 99e2d3ce6519597a950e762a60653dc04f84e22e
     hooks:
-    - id: isort
-    - id: black
-    - id: pytest
-    - id: validate-manifest
-
+      - id: validate-manifest   # validate manifest.json

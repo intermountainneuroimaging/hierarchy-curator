@@ -8,11 +8,12 @@ RUN apt-get update && apt-get install -y git && \
     pip install "poetry==1.1.2"
 
 COPY pyproject.toml poetry.lock ./
-RUN poetry install --no-dev
+RUN poetry install --no-dev --no-root
 
 COPY run.py manifest.json $FLYWHEEL/
 COPY fw_gear_hierarchy_curator $FLYWHEEL/fw_gear_hierarchy_curator
 COPY curator $FLYWHEEL/curator
+RUN poetry install --no-dev
 
 # Configure entrypoint
 RUN chmod a+x $FLYWHEEL/run.py

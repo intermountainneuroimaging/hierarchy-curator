@@ -131,7 +131,7 @@ turn calls `self.validate_session()` (See [Validation Methods](#validate)).
 `self.validate_session()` will only return `True` if the session starts with
 `trial-` and has a number (such as `trial-1`).  If `self.validate_session()`
 returns False, then the children of that session will not be queued and you
-won't curate any acquisitions, analyses, or files under this session.  __NOTE__:
+won't curate any acquisitions, analyses, or files under this session.  **NOTE**:
 Session attached files would still show up in `curate_file`
 
 ### Curate Methods
@@ -225,7 +225,7 @@ The file-curator gear comes with the following python packages installed:
 * flywheel-gear-toolkit
 * fw-file
 
-__Note__: See package versions in [./pyproject.toml](pyproject.toml)
+**Note**: See package versions in [./pyproject.toml](pyproject.toml)
 
 If you need other dependencies that aren't installed by default, the
 gear-toolkit provides an interface to programmatically install dependencies.
