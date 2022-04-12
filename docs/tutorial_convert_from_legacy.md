@@ -38,7 +38,7 @@ So our generalized list of tasks are:
 We'll need to update the script with the changes defined in the
 [README](../README.md#converting-from-legacy-script-to-new-format)
 in order to translate to the new format, but first let's look at how the
-[legacy-script](./examples/legacy-script.py) accomplishes these tasks:
+[legacy-script](../examples/legacy-script.py) accomplishes these tasks:
 
 ### Project level
 
@@ -350,7 +350,7 @@ def is_not_server_error(exception):
 
 ### Delete unused curate methods
 
-In the [legacy-script](./examples/legacy-script.py) you may notice that there
+In the [legacy-script](../examples/legacy-script.py) you may notice that there
 are a few curate methods that only have one statement that is `pass`.  In the
 new version, you don't need to specifically include those, so you can remove
 any method that just has `pass` in it.
@@ -378,4 +378,4 @@ class Curator(HierarchyCurator):
 
 ## End
 
-That's it!  For reference, check out the [final script](./examples/legacy-translated.py)
+That's it!  For reference, check out the [final script](../examples/legacy-translated.py)
