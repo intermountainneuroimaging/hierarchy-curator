@@ -1,5 +1,25 @@
 # Release Notes
 
+## 2.1.4
+
+__Bug__:
+
+* Fix bug in SDK not reloading `_parent` attribute `parent` property on files.
+    * Revert fix for using `parent_ref` as that was treating a (not all) symptom of the
+      above issue. Now we're fixing the cause.
+
+
+## 2.1.3
+
+__Maintenance__:
+
+* Update readme
+* Update to QA-CI
+
+__Bug__:
+
+* Use `parent_ref` to get parent container.
+
 ## 2.1.2
 
 __Bug__:
