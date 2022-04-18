@@ -16,7 +16,12 @@ from flywheel_gear_toolkit import GearToolkitContext
 from flywheel_gear_toolkit.utils import curator as c
 from flywheel_gear_toolkit.utils import datatypes, reporters, walker
 
-from .utils import container_to_pickleable_dict, handle_work, make_walker
+from .utils import (
+    container_to_pickleable_dict,
+    handle_work,
+    make_walker,
+    reload_file_parent,
+)
 
 sys.path.insert(0, str(Path(__file__).parents[1]))
 # multiprocessing_logging.install_mp_handler()
@@ -33,11 +38,13 @@ def handle_depth_first(
     """
     for container in containers:
         if container.container_type in ["analysis", "file"]:
+            container = reload_file_parent(container, local_curator)
             if local_curator.validate_container(container):
                 local_curator.curate_container(container)
         else:
             w = make_walker(container, local_curator)
             for cont in w.walk(callback=local_curator.config.callback):
+                cont = reload_file_parent(cont, local_curator)
                 log.debug(f"Found {cont.container_type}, ID: {cont.id}")
                 if local_curator.validate_container(cont):
                     local_curator.curate_container(cont)
@@ -53,6 +60,7 @@ def handle_breadth_first(
     if containers:
         w.add(containers)
     for cont in w.walk(callback=local_curator.config.callback):
+        cont = reload_file_parent(cont, local_curator)
         log.debug(f"Found {cont.container_type}, ID: {cont.id}")
         if local_curator.validate_container(cont):
             local_curator.curate_container(cont)
@@ -163,6 +171,8 @@ def start_multiproc(curator, root_walker) -> int:
     # Curate first container
     log.debug("Curating root container")
     parent_cont = root_walker.next(callback=curator.config.callback)
+    # Shouldn't need this, but doesn't hurt
+    parent_cont = reload_file_parent(parent_cont, curator)
     if curator.validate_container(parent_cont):
         curator.curate_container(parent_cont)
     log.info(f"Assigning work to each worker process.")
