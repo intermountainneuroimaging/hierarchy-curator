@@ -68,3 +68,17 @@ def make_walker(container: datatypes.Container, curator: c.HierarchyCurator):
         stop_level=curator.config.stop_level,
     )
     return w
+
+
+def reload_file_parent(
+    container: datatypes.Container,
+    local_curator: c.HierarchyCurator,
+):
+    if getattr(container, "container_type", "") == "file":
+        if getattr(container, "parent", None):
+            return container
+        get_parent_fn = getattr(
+            local_curator.context.client, f"get_{container.parent_ref.type}"
+        )
+        container._parent = get_parent_fn(container.parent_ref.id)
+    return container
