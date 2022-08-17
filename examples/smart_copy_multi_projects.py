@@ -1,12 +1,12 @@
 import json
-import sys
 import logging
 import re
-from typing import Any, Dict, List, Optional
-import flywheel
-from flywheel_gear_toolkit.utils.curator import HierarchyCurator, GearToolkitContext
-
+import sys
 import time
+from typing import Any, Dict, List, Optional
+
+import flywheel
+from flywheel_gear_toolkit.utils.curator import GearToolkitContext, HierarchyCurator
 
 log = logging.getLogger()
 
