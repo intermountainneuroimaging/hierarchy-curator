@@ -26,6 +26,10 @@ from flywheel_gear_toolkit.utils.curator import GearToolkitContext, HierarchyCur
 
 log = logging.getLogger()
 
+################################################################################
+#      The below global variables need to be modified to run the script        #
+################################################################################
+
 # Path to source project to copy
 SOURCE_PROJECT_PATHS = [
     "<group>/<project.label>",
@@ -76,9 +80,7 @@ def validate_project_path(project_path):
     Args:
         path (str): the path to validate
     """
-    reg = re.compile(
-        r"^[0-9a-z][0-9a-z.@_-]{0,62}[0-9a-z]\/(?!unsorted|unknown).*$"
-    )
+    reg = re.compile(r"^[0-9a-z][0-9a-z.@_-]{0,62}[0-9a-z]\/(?!unsorted|unknown).*$")
     if reg.match(project_path):
         return True
     return False
