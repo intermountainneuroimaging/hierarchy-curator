@@ -1,3 +1,19 @@
+"""A HierarchyCurator script that smart copies multiple projects and then aggregate
+all subjects to a dedicated destination project
+
+This is script is intended to alleviate the current limitation with smart copy
+only copying to a new project.
+
+Usage:
+
+    1. Modify the below global variables
+        * `SOURCE_PROJECT_PATHS` (required)
+        * `DESTINATION_PROJECT_PATH` (required)
+        * `TMP_GROUP` (optional)
+        * `WAIT_TIMEOUT` (optional)
+    2. Run the script as a HierarchyCurator gear job
+"""
+
 import json
 import logging
 import re
@@ -11,7 +27,7 @@ from flywheel_gear_toolkit.utils.curator import GearToolkitContext, HierarchyCur
 log = logging.getLogger()
 
 # Path to source project to copy
-SOURCE_PROJECT_PATH = [
+SOURCE_PROJECT_PATHS = [
     "<group>/<project.label>",
     "<group>/<project.label>",
 ]
@@ -60,11 +76,12 @@ def validate_project_path(project_path):
     Args:
         path (str): the path to validate
     """
-    reg = re.compile(r"^[a-zA-Z0-9_\-\s]+\/[a-zA-Z0-9_\-\s]+$")
+    reg = re.compile(
+        r"^[0-9a-z][0-9a-z.@_-]{0,62}[0-9a-z]\/(?i)^(?!unsorted|unknown).*$"
+    )
     if reg.match(project_path):
         return True
-    log.error(f"Invalid project path: {project_path}")
-    sys.exit(-1)
+    return False
 
 
 def get_or_create_project(client, project_path):
@@ -143,7 +160,11 @@ class Curator(HierarchyCurator):
         self, context: GearToolkitContext = None, **kwargs: Optional[Dict[str, Any]]
     ) -> None:
         super().__init__(context, extra_packages=["fw-core-client==1.1.2"], **kwargs)
-        validate_project_path(DESTINATION_PROJECT_PATH)
+        is_valid = validate_project_path(DESTINATION_PROJECT_PATH)
+        if not is_valid:
+            log.error(
+                f"This is an invalid project path (check script instructions): {DESTINATION_PROJECT_PATH}"
+            )
         self.dst_project = get_or_create_project(self.client, DESTINATION_PROJECT_PATH)
         self.source_proj = []
         self.config.stop_level = "project"
@@ -152,8 +173,12 @@ class Curator(HierarchyCurator):
 
     def curate_project(self, project):
         copy_rsp = []
-        for project_path in SOURCE_PROJECT_PATH:
+        for project_path in SOURCE_PROJECT_PATHS:
             log.info(f"Triggering smart copy of {project_path}")
+            is_valid = validate_project_path(project_path)
+            if not is_valid:
+                log.error(f"This is an invalid project path: {project_path} - SKIPPING")
+                continue
             project = self.client.lookup(project_path)
             dst_project_label = f"{project.label}_tmp_copy"
             copy_rsp.append(
