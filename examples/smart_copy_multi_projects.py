@@ -77,7 +77,7 @@ def validate_project_path(project_path):
         path (str): the path to validate
     """
     reg = re.compile(
-        r"^[0-9a-z][0-9a-z.@_-]{0,62}[0-9a-z]\/(?i)^(?!unsorted|unknown).*$"
+        r"^[0-9a-z][0-9a-z.@_-]{0,62}[0-9a-z]\/(?!unsorted|unknown).*$"
     )
     if reg.match(project_path):
         return True
