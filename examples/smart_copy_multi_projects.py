@@ -1,7 +1,7 @@
-"""A HierarchyCurator script that smart copies multiple projects and then aggregate
-all subjects to a dedicated destination project
+"""A HierarchyCurator script that smart copies multiple projects and then aggregates
+all subjects to a dedicated destination project.
 
-This is script is intended to alleviate the current limitation with smart copy
+This script is intended to alleviate the current limitation with smart copy
 only copying to a new project.
 
 Usage:
