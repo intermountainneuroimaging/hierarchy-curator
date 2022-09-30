@@ -1,5 +1,5 @@
 """
-An example curation script to retrigger gear rules.
+An example curation script to retrigger gear rules based on fiddling file.type
 """
 
 import logging
@@ -22,11 +22,10 @@ def needs_to_be_retriggered(file_: flywheel.FileEntry):
 
 def retrigger(acq: flywheel.Acquisition, file_: flywheel.FileEntry):
     type_ = file_.type
-    modality = file_.modality
     # Set to none type
     acq.update_file(file_.name, {"type": None})
     # Set back to nifti
-    res = acq.update_file(file_.name, {"type": type_, "modality": modality})
+    res = acq.update_file(file_.name, {"type": type_})
     log.info(f"{file_.name}: {res}")
 
 
