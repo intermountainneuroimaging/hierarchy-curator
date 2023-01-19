@@ -18,6 +18,8 @@ license = "MIT"
     flywheel-sdk = "^15.8.0"
     backoff = "^1.11.1"
     flywheel-gear-toolkit = {version = "^0.6.1", extras = ["all"]}
+    matplotlib = "^3.6.3"
+    argparse = "^1.4.0"
 
 
     [tool.poetry.dev-dependencies]

@@ -5,7 +5,7 @@ WORKDIR ${FLYWHEEL}
 
 #DEV install git
 RUN apt-get update && apt-get install -y git && \ 
-    pip install "poetry==1.1.2"
+    pip install "poetry==1.1.13"
 
 COPY pyproject.toml poetry.lock ./
 RUN poetry install --no-dev --no-root
